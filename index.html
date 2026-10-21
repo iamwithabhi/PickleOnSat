@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pickleball Americano</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 0 auto; padding: 16px; }
+  .row { display: flex; gap: 16px; align-items: flex-start; }
+  .row.hidden { display: none; }
+  #play { flex: 1; min-width: 0; }
+  #simBox { width: 220px; }
+  #simBox h2 { color: #1b7f3b; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .chip { display: inline-flex; flex-direction: column; align-items: center; padding: 4px 10px; border: 1px solid #ccc; border-radius: 999px; background: #fff; cursor: pointer; font: inherit; font-size: 0.85em; line-height: 1.2; }
+  .chip small { font-size: 0.8em; }
+  .chip.done { border-color: #1b7f3b; color: #1b7f3b; background: #eef8f1; }
+  .chip.playing { border-color: #b26a00; color: #b26a00; background: #fff8e6; font-weight: 600; }
+  .chip.upcoming { color: #777; }
+  .chip.selected { outline: 2px solid #333; outline-offset: 1px; }
+  .confirm:empty { display: none; }
+  .confirm { border: 1px solid #b26a00; background: #fff8e6; border-radius: 6px; padding: 8px; margin-top: 8px; }
+  .confirm p { margin: 0 0 8px; }
+  @media (max-width: 640px) { .row { flex-direction: column; align-items: stretch; } #simBox { width: auto; } }
+  section { border: 1px solid #ccc; border-radius: 6px; padding: 12px; margin-bottom: 16px; }
+  h1 { font-size: 1.4em; } h2 { font-size: 1.1em; margin-top: 0; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid #ddd; padding: 4px 6px; text-align: left; }
+  input[type=number] { width: 4em; }
+  .error { color: #b00020; min-height: 1.2em; }
+  .over { color: #1b7f3b; font-weight: 600; }
+  .live { color: #b26a00; font-weight: 600; }
+  .court { padding: 8px 0; border-bottom: 1px dashed #ddd; }
+  .hidden { display: none; }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+<h1>Pickleball Americano</h1>
+<p id="storageWarn" class="error hidden">This browser view can't save data, so a refresh will lose the tournament.
+  Run <code>node serve.js</code> and open http://localhost:8123 instead.</p>
+
+<section id="setup">
+  <h2>Players (<span id="count">0</span> added)</h2>
+  <form id="addForm">
+    <input id="name" placeholder="Player name" autocomplete="off">
+    <button>Add</button>
+  </form>
+  <div class="error" id="setupError"></div>
+  <ol id="playerList"></ol>
+  <p>
+    Play to <select id="target"><option>6</option><option>8</option><option>11</option></select> points
+    &nbsp; Courts <select id="courts"><option>1</option></select>
+    &nbsp; Rounds <input type="number" id="rounds" min="1" max="50">
+  </p>
+  <p id="plan"></p>
+  <p><button id="equalBtn" class="hidden"></button></p>
+  <button id="startBtn">Start tournament</button>
+</section>
+
+<div id="playRow" class="row hidden">
+<section id="play">
+  <h2 id="roundTitle"></h2>
+  <div id="roundChips" class="chips"></div>
+  <p id="byes"></p>
+  <div id="courtsBox"></div>
+  <div class="error" id="playError"></div>
+</section>
+
+<section id="simBox">
+  <h2>Simulation</h2>
+  <p>Plays the remaining games one by one (about 1 second each) and records random scores.</p>
+  <button id="simBtn">Run simulation</button>
+  <p id="simStatus"></p>
+</section>
+</div>
+
+<section id="standingsBox" class="hidden">
+  <h2>Standings</h2>
+  <table>
+    <thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Diff</th><th>Played</th><th>Wins</th><th title="Rounds sat out so far / total rounds this player sits out in the whole tournament (fixed when the tournament starts)">Sit-outs (so far / total)</th></tr></thead>
+    <tbody id="standings"></tbody>
+  </table>
+  <h2>Start over</h2>
+  <p>Ends this tournament, deletes every score and takes you back to player setup.
+     Your player list is kept, so you can add or remove players, change the points target and start a fresh draw.</p>
+  <p><button id="resetBtn">Reset &amp; Play Again!</button></p>
+  <div id="resetConfirm" class="confirm"></div>
+</section>
+
+<script src="americano.js"></script>
+<script>
+  const STORE = 'americano-v1';
+  const COURTS = 1;
+  const $ = (id) => document.getElementById(id);
+  if (!window.Americano) {
+    $('addForm').onsubmit = (e) => e.preventDefault();
+    $('setupError').textContent = 'Could not load americano.js. Run "node serve.js" and open http://localhost:8123.';
+    throw new Error('americano.js not loaded');
+  }
+  let t;
+  try { t = Americano.Tournament.fromJSON(localStorage.getItem(STORE) || '{}'); } catch (e) { t = new Americano.Tournament(); }
+  if (!Array.isArray(t.players)) t = new Americano.Tournament();
+  // Screen state that also survives a refresh (kept apart from the tournament itself).
+  const UI_STORE = 'americano-ui-v1';
+  let ui = {};
+  try { ui = JSON.parse(localStorage.getItem(UI_STORE) || '{}') || {}; } catch (e) {}
+  let viewRound = Number.isInteger(ui.viewRound) ? ui.viewRound : null; // null = follow current round
+  let drafts = ui.drafts && typeof ui.drafts === 'object' ? ui.drafts : {}; // typed, unsaved scores: { "round-court": [a, b] }
+  let shownRound = 0; // round currently displayed
+  let sim = null; // { round, court } while a simulation is running
+  const GAME_MS = 1000; // each simulated game takes ~1 second
+
+  // Detect browsers/views where storage is blocked, so we can warn instead of silently losing data.
+  let canSave = true;
+  try { localStorage.setItem('americano-test', '1'); localStorage.removeItem('americano-test'); } catch (e) { canSave = false; }
+  const showStorageWarning = () => $('storageWarn').classList.toggle('hidden', canSave);
+  const saveUi = () => {
+    try {
+      localStorage.setItem(UI_STORE, JSON.stringify({ viewRound, drafts, name: $('name').value, simRunning: !!sim }));
+    } catch (e) {}
+  };
+
+  // In-page Yes/Cancel prompt (the browser's confirm() pop-up is blocked in some embedded views).
+  function askConfirm(box, message, yesLabel, onYes) {
+    box.innerHTML = `<p>${message}</p><button class="yes">${yesLabel}</button> <button class="no">Cancel</button>`;
+    box.querySelector('.yes').onclick = () => { box.innerHTML = ''; onYes(); };
+    box.querySelector('.no').onclick = () => { box.innerHTML = ''; };
+  }
+
+  const save = () => {
+    try { localStorage.setItem(STORE, JSON.stringify(t)); } catch (e) { canSave = false; showStorageWarning(); }
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function renderSetup() {
+    const n = t.playerCount;
+    $('count').textContent = n;
+    $('playerList').innerHTML = t.players
+      .map((p, i) => `<li>${esc(p)} ${t.started ? '' : `<button data-rm="${i}">remove</button>`}</li>`)
+      .join('');
+    $('addForm').classList.toggle('hidden', t.started);
+    $('startBtn').classList.toggle('hidden', t.started);
+    ['target', 'courts', 'rounds'].forEach((id) => ($(id).disabled = t.started));
+    $('target').value = t.settings.target;
+
+    const chosen = COURTS; // only 1 court offered for now
+    $('equalBtn').classList.add('hidden');
+    if (n < Americano.MIN_PLAYERS) {
+      $('rounds').value = '';
+      $('plan').textContent = `Add at least ${Americano.MIN_PLAYERS - n} more player(s) to start.`;
+      return;
+    }
+    const rounds = t.settings.rounds || Americano.defaultRounds(n);
+    if (document.activeElement !== $('rounds')) $('rounds').value = rounds;
+    const sit = n - chosen * 4;
+    const { min, max } = Americano.sitOutSpread(n, chosen, rounds);
+    let text = `${rounds} rounds on ${chosen} court(s). `;
+    if (!sit) text += 'Everyone plays every round.';
+    else if (min === max) text += `${sit} sit out each round; everyone sits out ${min} and plays ${rounds - min}.`;
+    else text += `${sit} sit out each round; sit-outs are uneven: some players sit out ${max}, others ${min}.`;
+    $('plan').textContent = text;
+    if (!t.started && sit && min !== max) {
+      const eq = Americano.equalSitOutRounds(n, chosen, rounds);
+      const each = Americano.sitOutSpread(n, chosen, eq).min;
+      $('equalBtn').textContent = `Make sit-outs equal: use ${eq} rounds (${each} sit-out${each === 1 ? '' : 's'} each)`;
+      $('equalBtn').dataset.rounds = eq;
+      $('equalBtn').classList.remove('hidden');
+    }
+  }
+
+  // A typed-but-unsaved score for this court, if any; otherwise the saved score.
+  const draft = (r, c, side, saved) => {
+    const d = drafts[`${r}-${c}`];
+    return d ? d[side] : saved;
+  };
+
+  function renderPlay() {
+    saveUi();
+    $('playRow').classList.toggle('hidden', !t.started);
+    $('standingsBox').classList.toggle('hidden', !t.started);
+    if (!t.started) return;
+    const cur = t.currentRoundIndex;
+    const total = t.rounds.length;
+    if (viewRound != null && !(viewRound >= 0 && viewRound < total)) viewRound = null;
+    $('simBtn').classList.toggle('hidden', t.finished);
+    $('simBtn').textContent = sim ? 'Stop simulation' : 'Run simulation';
+    $('simStatus').textContent = t.finished ? 'All games played.'
+      : sim && sim.round >= 0 ? `Simulating round ${sim.round + 1}, court ${sim.court + 1}…` : '';
+    $('roundTitle').textContent = t.finished
+      ? `Tournament complete (${total} rounds)`
+      : `Now playing: Round ${cur + 1} of ${total}`;
+    const r = viewRound == null ? (cur === -1 ? total - 1 : cur) : viewRound;
+    shownRound = r;
+    $('roundChips').innerHTML = t.rounds.map((round, i) => {
+      const state = round.matches.every((m) => m.over) ? 'done' : i === cur ? 'playing' : 'upcoming';
+      const label = { done: 'Done', playing: 'Playing', upcoming: 'Upcoming' }[state];
+      return `<button class="chip ${state}${i === r ? ' selected' : ''}" data-round="${i}">Round ${i + 1} <small>${label}</small></button>`;
+    }).join('');
+    const v = t.roundView(r);
+    $('byes').textContent = v.byes.length ? `Sitting out: ${v.byes.join(', ')}` : '';
+    const locked = cur !== -1 && r > cur;
+    $('courtsBox').innerHTML = v.matches.map((m, c) => `
+      <div class="court">
+        <b>Court ${m.court}:</b> ${esc(m.teamA.join(' & '))} <i>vs</i> ${esc(m.teamB.join(' & '))}<br>
+        <input type="number" min="0" id="a${c}" value="${esc(draft(r, c, 0, m.scoreA))}" ${locked ? 'disabled' : ''}> -
+        <input type="number" min="0" id="b${c}" value="${esc(draft(r, c, 1, m.scoreB))}" ${locked ? 'disabled' : ''}>
+        <button data-save="${c}" ${locked ? 'disabled' : ''}>Save score</button>
+        <span class="${m.over ? 'over' : 'live'}">${sim && sim.round === r && sim.court === c ? 'Simulating…' : m.status}${m.winner ? ` — ${esc(m.winner.join(' & '))} win` : ''}</span>
+      </div>`).join('');
+  }
+
+  function renderStandings() {
+    if (!t.started) return;
+    $('standings').innerHTML = t.standings().map((s) =>
+      `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes} / ${s.byesTotal}</td></tr>`
+    ).join('');
+  }
+
+  function render() { renderSetup(); renderPlay(); renderStandings(); }
+
+  $('addForm').onsubmit = (e) => {
+    e.preventDefault();
+    try { t.addPlayer($('name').value); $('name').value = ''; $('setupError').textContent = ''; save(); render(); }
+    catch (err) { $('setupError').textContent = err.message; }
+    $('name').focus();
+  };
+  $('playerList').onclick = (e) => {
+    const i = e.target.dataset.rm;
+    if (i == null) return;
+    t.removePlayer(t.players[i]); save(); render();
+  };
+  $('target').onchange = () => { t.configure({ target: +$('target').value }); save(); };
+  $('rounds').oninput = () => {
+    const v = Number($('rounds').value);
+    if (!Number.isInteger(v) || v < 1 || v > 50) return; // ignore while typing / out of range
+    t.configure({ rounds: v }); save(); renderSetup();
+  };
+  $('rounds').onblur = () => renderSetup(); // snap an invalid entry back to the saved value
+  $('equalBtn').onclick = () => {
+    t.configure({ rounds: +$('equalBtn').dataset.rounds }); save(); renderSetup();
+  };
+  $('startBtn').onclick = () => {
+    try {
+      t.configure({ courts: COURTS, seed: null });
+      t.start(); viewRound = null; drafts = {}; $('setupError').textContent = ''; save(); render();
+    } catch (err) { $('setupError').textContent = err.message; }
+  };
+  $('roundChips').onclick = (e) => {
+    const chip = e.target.closest('[data-round]');
+    if (chip) { viewRound = +chip.dataset.round; renderPlay(); } // renderPlay also saves the choice
+  };
+  $('courtsBox').onclick = (e) => {
+    const c = e.target.dataset.save;
+    if (c == null) return;
+    const r = shownRound;
+    const a = $('a' + c).value === '' ? NaN : Number($('a' + c).value);
+    const b = $('b' + c).value === '' ? NaN : Number($('b' + c).value);
+    try {
+      const before = t.currentRoundIndex;
+      t.recordScore(r, +c, a, b);
+      delete drafts[`${r}-${c}`];
+      $('playError').textContent = '';
+      if (t.currentRoundIndex !== before) viewRound = null; // jump to the new current round
+      save(); render();
+    } catch (err) { $('playError').textContent = `Court ${+c + 1}: ${err.message}`; }
+  };
+  $('courtsBox').oninput = (e) => {
+    const m = /^[ab](\d+)$/.exec(e.target.id);
+    if (!m) return;
+    const c = m[1];
+    drafts[`${shownRound}-${c}`] = [$('a' + c).value, $('b' + c).value];
+    saveUi();
+  };
+  $('name').oninput = saveUi;
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  // Plays every remaining game one at a time, a rally per tick, ~GAME_MS per game.
+  async function runSimulation() {
+    const me = (sim = { round: -1, court: -1 });
+    while (sim === me && !t.finished) {
+      const r = t.currentRoundIndex;
+      const c = t.rounds[r].matches.findIndex((m) => !m.over);
+      const m = t.rounds[r].matches[c];
+      me.round = r; me.court = c; viewRound = null;
+      const steps = Americano.simulateGame(m.scoreA, m.scoreB, t.settings.target);
+      render();
+      for (const [a, b] of steps) {
+        await sleep(GAME_MS / steps.length);
+        if (sim !== me) return;
+        try { t.recordScore(r, c, a, b); delete drafts[`${r}-${c}`]; }
+        catch (err) { // e.g. the score was edited by hand mid-simulation
+          sim = null; $('playError').textContent = `Simulation stopped: ${err.message}`; render(); return;
+        }
+        save(); render();
+      }
+    }
+    if (sim === me) { sim = null; render(); }
+  }
+
+  $('simBtn').onclick = () => {
+    if (sim) { sim = null; render(); return; }
+    $('playError').textContent = '';
+    runSimulation();
+  };
+
+  $('resetBtn').onclick = () => {
+    const done = t.rounds.reduce((s, r) => s + r.matches.filter((m) => m.over).length, 0);
+    askConfirm($('resetConfirm'),
+      `Delete all scores (${done} finished game(s)) and go back to setup? Your ${t.playerCount} players are kept.`,
+      'Yes, delete scores and start over', () => {
+        sim = null;
+        t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the chosen rounds
+        window.scrollTo(0, 0);
+      });
+  };
+
+  // Restore what was on screen before a refresh.
+  if (typeof ui.name === 'string') $('name').value = ui.name;
+  showStorageWarning();
+  render();
+  if (ui.simRunning && t.started && !t.finished) runSimulation(); // pick up where it left off
+</script>
+</body>
+</html>

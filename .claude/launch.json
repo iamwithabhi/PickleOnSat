@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "americano",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["serve.js"],
+      "port": 8123
+    },
+    {
+      "name": "americano-test",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "process.env.PORT='8124'; require('./serve.js')"],
+      "port": 8124
+    }
+  ]
+}
