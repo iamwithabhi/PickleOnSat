@@ -121,10 +121,10 @@ function renderRoster() {
     return `
       <div class="player${p === justAdded ? ' new' : ''}">
         <div class="portrait" data-show="${i}" ${bg ? `data-bg="${bg}"` : ''} title="${locked ? '' : 'Click for a different character'}">${art}
+          <span class="no">${String(i + 1).padStart(2, '0')}</span>
           ${locked ? '' : `<button class="remove" data-rm="${i}" aria-label="Remove ${esc(p)}" title="Remove">${TRASH_ICON}</button>`}
         </div>
         <div class="info">
-          <span class="no">${String(i + 1).padStart(2, '0')}</span>
           <div class="name" title="${esc(p)}">${esc(p)}</div>
         </div>
       </div>`;
@@ -135,9 +135,8 @@ function renderRoster() {
   for (let i = 0; i < missing; i++) {
     cards.push(`
       <div class="player vacant">
-        <div class="portrait"></div>
+        <div class="portrait"><span class="no">${String(t.playerCount + i + 1).padStart(2, '0')}</span></div>
         <div class="info">
-          <span class="no">${String(t.playerCount + i + 1).padStart(2, '0')}</span>
           <div class="name">Player</div>
         </div>
       </div>`);
