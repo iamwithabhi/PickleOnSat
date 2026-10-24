@@ -115,16 +115,16 @@ function renderRoster() {
     const c = charOf(p);
     const img = c && gfx && gfx.portrait(c.id);
     const art = img
-      ? `<img src="${img}" alt="">`
+      ? `<div class="spin" style="background-image:url(${img});animation-delay:-${(i * 0.9).toFixed(1)}s"></div>`
       : `<span class="initials">${esc(p.slice(0, 2).toUpperCase())}</span>`;
     const bg = bgOf(p);
     return `
       <div class="player${p === justAdded ? ' new' : ''}">
-        <div class="portrait" data-show="${i}" ${bg ? `style="--art: url('Backgrounds/${bg}')"` : ''} title="${locked ? '' : 'Click for a different character'}">${art}
-          <span class="slot-no">P ${String(i + 1).padStart(2, '0')}</span>
+        <div class="portrait" data-show="${i}" ${bg ? `data-bg="${bg}"` : ''} title="${locked ? '' : 'Click for a different character'}">${art}
           ${locked ? '' : `<button class="remove" data-rm="${i}" aria-label="Remove ${esc(p)}" title="Remove">${TRASH_ICON}</button>`}
         </div>
         <div class="info">
+          <span class="no">${String(i + 1).padStart(2, '0')}</span>
           <div class="name" title="${esc(p)}">${esc(p)}</div>
         </div>
       </div>`;
@@ -135,8 +135,9 @@ function renderRoster() {
   for (let i = 0; i < missing; i++) {
     cards.push(`
       <div class="player vacant">
-        <div class="portrait"><span class="slot-no">P ${String(t.playerCount + i + 1).padStart(2, '0')}</span></div>
+        <div class="portrait"></div>
         <div class="info">
+          <span class="no">${String(t.playerCount + i + 1).padStart(2, '0')}</span>
           <div class="name">Player</div>
         </div>
       </div>`);
@@ -154,10 +155,20 @@ function renderSuggestions() {
   $('suggest').innerHTML = left.map((s) => `<button type="button" class="suggest-chip" data-suggest="${esc(s)}">+ ${esc(s)}</button>`).join('');
 }
 
+// The read-only table: rounds, and what that means for each player.
+function showRounds(rounds) {
+  let games = '?', sit = '?';
+  if (Number.isInteger(rounds)) {
+    // rounds is always an even-up count, so everyone sits out the same number of times
+    sit = Americano.sitOutSpread(t.playerCount, COURTS, rounds).min;
+    games = rounds - sit;
+  }
+  $('rounds').innerHTML = `<tr><td>${rounds}</td><td>${games}</td><td>${sit}</td></tr>`;
+}
+
 function renderSetup() {
   const n = t.playerCount;
   const locked = t.started;
-  $('count').textContent = n;
   $('addForm').classList.toggle('hidden', locked);
   $('lockedNote').classList.toggle('hidden', !locked);
   $('startBtn').classList.toggle('hidden', locked);
@@ -173,21 +184,22 @@ function renderSetup() {
   const enough = n >= Americano.MIN_PLAYERS;
   $('startBtn').disabled = !enough;
   if (!enough) {
-    $('rounds').textContent = '–';
+    showRounds('?');
     $('plan').textContent = `Add at least ${Americano.MIN_PLAYERS - n} more player${Americano.MIN_PLAYERS - n === 1 ? '' : 's'} to start.`;
     renderRoster();
     return;
   }
   $('plan').textContent = '';
 
-  // Rounds are not chosen: always the fewest rounds in which every player plays the same
-  // number of games and sits out the same number of times. Recomputed whenever the roster changes.
+  // Rounds are not chosen. Same rule as main: start from the standard Americano count (everyone partners everyone
+  // once), then move to the nearest count where every player sits out equally, applied automatically instead of
+  // asking. Recomputed whenever the roster changes.
   let rounds = t.settings.rounds;
   if (!locked) {
-    rounds = Americano.sitOutStep(n, COURTS);
+    rounds = Americano.equalSitOutRounds(n, COURTS, Americano.defaultRounds(n));
     if (rounds !== t.settings.rounds) { t.configure({ rounds }); save(); }
   }
-  $('rounds').textContent = rounds;
+  showRounds(rounds);
   renderRoster();
 }
 
@@ -367,12 +379,22 @@ $('resetBtn').onclick = () => {
     `Delete all scores (${done} finished game(s)) and go back to setup? Your ${t.playerCount} players are kept.`,
     'Yes, delete scores and start over', () => {
       sim = null;
-      t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the chosen rounds
+      t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the players
       go('players');
     });
 };
 
 function render() { renderSetup(); renderPlay(); renderStandings(); }
+
+// ---------- tap feedback ----------
+
+// iOS Safari only applies :active (the "pressed in" look) when some touch listener exists on the page.
+document.addEventListener('touchstart', () => {}, { passive: true });
+// A tiny buzz on phones that support it, so a tap on a button is felt as well as seen.
+document.addEventListener('pointerdown', (e) => {
+  const b = e.target.closest('.btn, .court button');
+  if (b && !b.disabled && navigator.vibrate) navigator.vibrate(8);
+});
 
 // ---------- boot ----------
 
@@ -380,6 +402,11 @@ function render() { renderSetup(); renderPlay(); renderStandings(); }
 async function loadCharacters() {
   try {
     const mod = await import('./characters.js');
+    mod.podiumImage().then((url) => {
+      const logo = document.querySelector('.logo');
+      logo.querySelector('img').src = url;
+      logo.classList.add('has-img');
+    }).catch((e) => console.warn('Podium logo unavailable.', e));
     await mod.preload();
     gfx = mod;
     renderRoster();
@@ -388,7 +415,6 @@ async function loadCharacters() {
   }
 }
 
-BACKGROUNDS.forEach((f) => { new Image().src = `Backgrounds/${f}`; }); // warm the cache so a new card never flashes dark
 ensureCharacters(); save();
 if (typeof ui.name === 'string') $('name').value = ui.name;
 showStorageWarning();

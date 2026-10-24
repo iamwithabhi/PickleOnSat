@@ -1,0 +1,5 @@
+# Winners' Podium
+newmtl material_0
+Kd 1 1 1
+d 1
+map_Kd textures/texture_0_03b9_2300_2314.png

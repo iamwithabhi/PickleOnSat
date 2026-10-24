@@ -225,6 +225,24 @@ test('fewest rounds on one court: every player plays the same games and sits out
   }
 });
 
+test('app rule: standard Americano rounds, raised automatically to even out sit-outs (one court)', () => {
+  // what the setup screen shows for n players
+  const shown = (n) => equalSitOutRounds(n, 1, defaultRounds(n));
+  const expected = { 4: 3, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 12, 16: 16, 20: 20, 24: 24 };
+  for (const [n, rounds] of Object.entries(expected)) assert.equal(shown(+n), rounds, `players ${n}`);
+  for (let n = 4; n <= 24; n++) {
+    const rounds = shown(n);
+    assert.ok(rounds >= defaultRounds(n), `n=${n} must never go below the standard count`);
+    const { min, max } = sitOutSpread(n, 1, rounds);
+    assert.equal(min, max, `n=${n} sit-outs not even`);
+    // and the schedule really is fair: nobody repeats a partner within a full rotation
+    const sched = generateSchedule(n, { courts: 1, rounds, seed: 3 });
+    const partner = {};
+    for (const r of sched) for (const m of r.matches) for (const t of [m.teamA, m.teamB]) { const k = t.slice().sort().join('-'); partner[k] = (partner[k] || 0) + 1; }
+    assert.equal(Math.max(...Object.values(partner)), 1, `n=${n} repeats a partnership`);
+  }
+});
+
 test('sitOutSpread', () => {
   assert.deepEqual(sitOutSpread(6, 1, 5), { min: 1, max: 2 });
   assert.deepEqual(sitOutSpread(6, 1, 6), { min: 2, max: 2 });

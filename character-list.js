@@ -1,7 +1,6 @@
-// Low-res select-screen backdrops in /Backgrounds, made by tools/make-backgrounds.js.
+// Card backdrops: each name is a tint, drawn in CSS (see .portrait[data-bg] in index.html).
 export const BACKGROUNDS = [
-  'bg-01-lime.png', 'bg-02-violet.png', 'bg-03-ember.png', 'bg-04-ocean.png', 'bg-05-teal.png', 'bg-06-crimson.png',
-  'bg-07-gold.png', 'bg-08-magenta.png', 'bg-09-steel.png', 'bg-10-olive.png', 'bg-11-sunset.png', 'bg-12-night.png',
+  'lime', 'violet', 'ember', 'ocean', 'teal', 'crimson', 'gold', 'magenta', 'steel', 'olive', 'sunset', 'night',
 ];
 
 // The playable characters (models live in /Characters/<dir>/{Body,Head}/).

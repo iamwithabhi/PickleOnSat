@@ -1,0 +1,5 @@
+Name: Winners' Podium
+ID: 953
+Category: Celebration
+Variant: Standard
+Description: There are 3 different levels. The higher you stand the better.
