@@ -115,10 +115,10 @@
     position: relative; width: 100%; aspect-ratio: 4 / 3; flex: none; display: grid; place-items: center; overflow: hidden;
     background: #2a2b30;
   }
-  /* turntable: a strip of 20 frames, stepped through so the character turns a full circle (20 frames, 20 levels) */
-  .player .portrait .spin { width: 100%; height: 100%; background: no-repeat 0 0 / 2000% 100%; animation: spin 8s steps(20, jump-none) infinite; }
-  @keyframes spin { to { background-position: 100% 0; } }
-  @media (prefers-reduced-motion: reduce) { .player .portrait .spin { animation: none; } }
+  /* turntable: a strip of 20 frames, stepped through so the character turns a full circle (20 frames, 20 steps) */
+  .player .portrait .spin { width: 100%; height: 100%; background: no-repeat 0 0 / 2000% 100%; animation: spin 8s steps(20, end) infinite; }
+  /* 20 steps ending at 20/19 of the way: frame k sits at k/19 of the background travel, so every frame lands exactly */
+  @keyframes spin { to { background-position: 105.2632% 0; } }
   .player .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .player .portrait[data-show] { cursor: pointer; }
   .player .portrait .initials { font-weight: 700; font-size: 1.4rem; color: #fff; }
