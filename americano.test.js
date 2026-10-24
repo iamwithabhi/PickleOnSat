@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   Tournament, generateSchedule, evaluateScore, simulateGame, mulberry32, defaultRounds, maxCourts,
-  equalSitOutRounds, sitOutSpread,
+  equalSitOutRounds, sitOutStep, sitOutSpread,
 } = require('./americano.js');
 
 const key = (a, b) => (a < b ? `${a}-${b}` : `${b}-${a}`);
@@ -178,6 +178,51 @@ test('equalSitOutRounds: known single-court examples', () => {
   assert.equal(equalSitOutRounds(4, 1), 3);   // nobody sits out: keep default
   assert.equal(equalSitOutRounds(6, 1, 1), 3); // never returns 0 rounds
   assert.equal(equalSitOutRounds(6, 1, 8), 9);
+});
+
+test('sitOutStep: rounds must be a multiple of it for equal sit-outs', () => {
+  assert.equal(sitOutStep(4, 1), 1); // nobody sits out
+  assert.equal(sitOutStep(5, 1), 5);
+  assert.equal(sitOutStep(6, 1), 3);
+  assert.equal(sitOutStep(7, 1), 7);
+  assert.equal(sitOutStep(8, 1), 2);
+  assert.equal(sitOutStep(8, 2), 1);
+  for (let n = 4; n <= 24; n++) {
+    for (let c = 1; c <= maxCourts(n); c++) {
+      const step = sitOutStep(n, c);
+      for (const k of [1, 2, 3]) {
+        const { min, max } = sitOutSpread(n, c, step * k);
+        assert.equal(min, max, `n=${n} c=${c} rounds=${step * k}`);
+      }
+      // stepping up or down from an equal count always lands on another equal count
+      const eq = equalSitOutRounds(n, c);
+      assert.equal(eq % step, 0, `n=${n} c=${c}`);
+      assert.equal(equalSitOutRounds(n, c, eq + step), eq + step);
+    }
+  }
+});
+
+test('fewest rounds on one court: every player plays the same games and sits out the same', () => {
+  const expected = { 4: 1, 5: 5, 6: 3, 7: 7, 8: 2, 9: 9, 10: 5, 11: 11, 12: 3, 16: 4, 20: 5, 24: 6 };
+  for (const [n, rounds] of Object.entries(expected)) assert.equal(sitOutStep(+n, 1), rounds, `players ${n}`);
+  for (let n = 4; n <= 24; n++) {
+    const rounds = sitOutStep(n, 1);
+    const t = makeTournament(n, { courts: 1, rounds });
+    assert.equal(t.rounds.length, rounds);
+    const st = t.standings();
+    const sits = new Set(st.map((p) => p.byesTotal));
+    assert.equal(sits.size, 1, `n=${n} uneven sit-outs`);
+    const plays = new Array(n).fill(0);
+    t.rounds.forEach((r) => r.matches.forEach((m) => [...m.teamA, ...m.teamB].forEach((p) => plays[p]++)));
+    assert.equal(new Set(plays).size, 1, `n=${n} uneven games ${plays}`);
+    assert.equal(plays[0] + [...sits][0], rounds);
+    // no smaller round count works
+    for (let r = 1; r < rounds; r++) {
+      const spread = sitOutSpread(n, 1, r);
+      const gamesEach = (4 * r) / n;
+      assert.ok(spread.min !== spread.max || !Number.isInteger(gamesEach), `n=${n} r=${r} would also be even`);
+    }
+  }
 });
 
 test('sitOutSpread', () => {

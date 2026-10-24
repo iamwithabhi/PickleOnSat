@@ -1,0 +1,907 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 12552,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8368,
+      "byteOffset": 12552
+    },
+    {
+      "buffer": 0,
+      "byteLength": 12552,
+      "byteOffset": 20920
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 33472,
+      "byteStride": 4,
+      "byteLength": 4184
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 37656,
+      "byteStride": 4,
+      "byteLength": 4184
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3912,
+      "byteOffset": 41840
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1408,
+      "byteOffset": 45752
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1046,
+      "min": [
+        -9.76318359375,
+        0.01513671875,
+        -1.8271484375
+      ],
+      "max": [
+        9.762451171875,
+        16.94921875,
+        1.893798828125
+      ]
+    },
+    {
+      "bufferView": 1,
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 1046
+    },
+    {
+      "bufferView": 2,
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1046
+    },
+    {
+      "bufferView": 3,
+      "type": "VEC4",
+      "componentType": 5121,
+      "count": 1046
+    },
+    {
+      "bufferView": 4,
+      "type": "VEC4",
+      "componentType": 5121,
+      "normalized": true,
+      "count": 1046
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 93
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 186,
+      "componentType": 5123,
+      "count": 195
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 576,
+      "componentType": 5123,
+      "count": 300
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1176,
+      "componentType": 5123,
+      "count": 288
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1752,
+      "componentType": 5123,
+      "count": 72
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1896,
+      "componentType": 5123,
+      "count": 180
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 2256,
+      "componentType": 5123,
+      "count": 240
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 2736,
+      "componentType": 5123,
+      "count": 198
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 3132,
+      "componentType": 5123,
+      "count": 192
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 3516,
+      "componentType": 5123,
+      "count": 78
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 3672,
+      "componentType": 5123,
+      "count": 120
+    },
+    {
+      "bufferView": 6,
+      "type": "MAT4",
+      "componentType": 5126,
+      "count": 22
+    }
+  ],
+  "extensionsUsed": [
+    "FB_ngon_encoding",
+    "KHR_materials_unlit"
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 4,
+          "indices": 5,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 1,
+          "indices": 6,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 6,
+          "indices": 7,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 2,
+          "indices": 8,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 9,
+          "indices": 9,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 10,
+          "indices": 10,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 5,
+          "indices": 11,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 8,
+          "indices": 12,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 7,
+          "indices": 13,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 3,
+          "indices": 14,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 0,
+          "indices": 15,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        }
+      ],
+      "name": "Taker_B"
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1,
+        16,
+        18
+      ],
+      "name": "root",
+      "translation": [
+        0,
+        9.6875,
+        0
+      ]
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "kosi",
+      "translation": [
+        0,
+        1.869140625,
+        0
+      ]
+    },
+    {
+      "children": [
+        3,
+        6,
+        7
+      ],
+      "name": "mune",
+      "translation": [
+        0,
+        2.2314453125,
+        0
+      ]
+    },
+    {
+      "children": [
+        4
+      ],
+      "name": "l_sakotsu",
+      "translation": [
+        0,
+        1.763671875,
+        0
+      ]
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "l_ninoude",
+      "translation": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "children": [
+        10
+      ],
+      "name": "l_hizi",
+      "translation": [
+        2.81494140625,
+        0,
+        -0.050048828125
+      ]
+    },
+    {
+      "name": "kubi",
+      "translation": [
+        0,
+        2.9501953125,
+        0
+      ]
+    },
+    {
+      "children": [
+        8
+      ],
+      "name": "r_sakotsu",
+      "translation": [
+        0,
+        1.763671875,
+        0
+      ]
+    },
+    {
+      "children": [
+        9
+      ],
+      "name": "r_ninoude",
+      "translation": [
+        -2,
+        0,
+        0
+      ]
+    },
+    {
+      "children": [
+        11
+      ],
+      "name": "r_hizi",
+      "translation": [
+        -2.81494140625,
+        0,
+        -0.050048828125
+      ]
+    },
+    {
+      "children": [
+        12,
+        15
+      ],
+      "name": "l_te",
+      "translation": [
+        2.81494140625,
+        0,
+        0.050048828125
+      ]
+    },
+    {
+      "children": [
+        13,
+        14
+      ],
+      "name": "r_te",
+      "translation": [
+        -2.81494140625,
+        0,
+        0.050048828125
+      ]
+    },
+    {
+      "name": "l_yubi10",
+      "translation": [
+        1.125732421875,
+        0.132568359375,
+        0.10498046875
+      ]
+    },
+    {
+      "name": "r_yubi10",
+      "translation": [
+        -1.12548828125,
+        0.132568359375,
+        0.10498046875
+      ]
+    },
+    {
+      "name": "r_yubi00",
+      "translation": [
+        -0.0927734375,
+        -0.149658203125,
+        0.30078125
+      ]
+    },
+    {
+      "name": "l_yubi00",
+      "translation": [
+        0.0927734375,
+        -0.149658203125,
+        0.301025390625
+      ]
+    },
+    {
+      "children": [
+        17
+      ],
+      "name": "l_momo",
+      "translation": [
+        1.14208984375,
+        0,
+        0.000244140625
+      ]
+    },
+    {
+      "children": [
+        20
+      ],
+      "name": "l_sune",
+      "translation": [
+        0,
+        -4.347900390625,
+        0.10009765625
+      ]
+    },
+    {
+      "children": [
+        19
+      ],
+      "name": "r_momo",
+      "translation": [
+        -1.14208984375,
+        0,
+        0.000244140625
+      ]
+    },
+    {
+      "children": [
+        21
+      ],
+      "name": "r_sune",
+      "translation": [
+        0,
+        -4.347900390625,
+        0.10009765625
+      ]
+    },
+    {
+      "name": "l_ashi",
+      "translation": [
+        0,
+        -4.347900390625,
+        -0.10009765625
+      ]
+    },
+    {
+      "name": "r_ashi",
+      "translation": [
+        0,
+        -4.347900390625,
+        -0.10009765625
+      ]
+    },
+    {
+      "mesh": 0,
+      "skin": 0,
+      "name": "Taker_B",
+      "children": [
+        0
+      ]
+    }
+  ],
+  "skins": [
+    {
+      "skeleton": 0,
+      "joints": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "inverseBindMatrices": 16
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        22
+      ],
+      "name": "Taker_B"
+    }
+  ],
+  "scene": 0,
+  "samplers": [
+    {
+      "wrapS": 33071,
+      "wrapT": 33071,
+      "magFilter": 9728,
+      "minFilter": 9728
+    },
+    {
+      "wrapS": 33071,
+      "wrapT": 10497,
+      "magFilter": 9728,
+      "minFilter": 9728
+    },
+    {
+      "wrapS": 10497,
+      "wrapT": 33071,
+      "magFilter": 9728,
+      "minFilter": 9728
+    }
+  ],
+  "images": [
+    {
+      "uri": "tak_boot_02.png"
+    },
+    {
+      "uri": "tak_armL_01.png"
+    },
+    {
+      "uri": "tak_armR_01.png"
+    },
+    {
+      "uri": "tak_boot_01.png"
+    },
+    {
+      "uri": "tak_elbow_01.png"
+    },
+    {
+      "uri": "tak_glove_01.png"
+    },
+    {
+      "uri": "tak_tank_01.png"
+    },
+    {
+      "uri": "tak_tights_01.png"
+    },
+    {
+      "uri": "tak_tights_02.png"
+    },
+    {
+      "uri": "tak_wrist_01.png"
+    },
+    {
+      "uri": "tak_yubi_01.png"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 1
+    },
+    {
+      "source": 2,
+      "sampler": 1
+    },
+    {
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "source": 5,
+      "sampler": 0
+    },
+    {
+      "source": 6,
+      "sampler": 0
+    },
+    {
+      "source": 7,
+      "sampler": 2
+    },
+    {
+      "source": 8,
+      "sampler": 2
+    },
+    {
+      "source": 9,
+      "sampler": 0
+    },
+    {
+      "source": 10,
+      "sampler": 0
+    }
+  ],
+  "materials": [
+    {
+      "name": "Material1",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "arm_L",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "arm_R",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "boot_c",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "elbow",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 4
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "glove",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 5
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "tanktop",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 6
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "tights",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 7
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "tights_2",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 8
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "wrist",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 9
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "yubi",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 10
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 47160,
+      "uri": "Taker_B.bin"
+    }
+  ]
+}

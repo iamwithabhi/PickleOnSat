@@ -64,6 +64,13 @@
     return b === 0 ? a : gcd(b, a % b);
   }
 
+  /** Rounds must be a multiple of this for every player to sit out equally (1 when nobody sits out). */
+  function sitOutStep(n, courts) {
+    courts = courts == null ? maxCourts(n) : courts;
+    const sitOut = n - courts * 4;
+    return sitOut === 0 ? 1 : n / gcd(n, sitOut);
+  }
+
   /**
    * Round count closest to `around` (default: the standard count) for which every
    * player sits out the same number of times. Ties prefer more rounds.
@@ -73,7 +80,7 @@
     around = around == null ? defaultRounds(n) : around;
     const sitOut = n - courts * 4;
     if (sitOut === 0) return around;
-    const step = n / gcd(n, sitOut); // rounds must be a multiple of this
+    const step = sitOutStep(n, courts);
     const below = Math.floor(around / step) * step;
     const above = below === around ? around : below + step;
     if (below === 0) return above;
@@ -537,6 +544,7 @@
     mulberry32,
     defaultRounds,
     equalSitOutRounds,
+    sitOutStep,
     sitOutSpread,
     maxCourts,
     MIN_PLAYERS,

@@ -1,0 +1,896 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 13488,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8992,
+      "byteOffset": 13488
+    },
+    {
+      "buffer": 0,
+      "byteLength": 13488,
+      "byteOffset": 22480
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 35968,
+      "byteStride": 4,
+      "byteLength": 4496
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 40464,
+      "byteStride": 4,
+      "byteLength": 4496
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4272,
+      "byteOffset": 44960
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1408,
+      "byteOffset": 49232
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1124,
+      "min": [
+        -9.693359375,
+        0.01806640625,
+        -1.7236328125
+      ],
+      "max": [
+        9.693359375,
+        17.423828125,
+        2.160400390625
+      ]
+    },
+    {
+      "bufferView": 1,
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 1124
+    },
+    {
+      "bufferView": 2,
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1124
+    },
+    {
+      "bufferView": 3,
+      "type": "VEC4",
+      "componentType": 5121,
+      "count": 1124
+    },
+    {
+      "bufferView": 4,
+      "type": "VEC4",
+      "componentType": 5121,
+      "normalized": true,
+      "count": 1124
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 36
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 72,
+      "componentType": 5123,
+      "count": 72
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 216,
+      "componentType": 5123,
+      "count": 456
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1128,
+      "componentType": 5123,
+      "count": 72
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1272,
+      "componentType": 5123,
+      "count": 180
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1632,
+      "componentType": 5123,
+      "count": 150
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 1932,
+      "componentType": 5123,
+      "count": 396
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 2724,
+      "componentType": 5123,
+      "count": 132
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 2988,
+      "componentType": 5123,
+      "count": 144
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 3276,
+      "componentType": 5123,
+      "count": 246
+    },
+    {
+      "bufferView": 5,
+      "type": "SCALAR",
+      "byteOffset": 3768,
+      "componentType": 5123,
+      "count": 252
+    },
+    {
+      "bufferView": 6,
+      "type": "MAT4",
+      "componentType": 5126,
+      "count": 22
+    }
+  ],
+  "extensionsUsed": [
+    "FB_ngon_encoding",
+    "KHR_materials_unlit"
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 6,
+          "indices": 5,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 10,
+          "indices": 6,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 1,
+          "indices": 7,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 5,
+          "indices": 8,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 3,
+          "indices": 9,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 0,
+          "indices": 10,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 2,
+          "indices": 11,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 8,
+          "indices": 12,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 4,
+          "indices": 13,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 7,
+          "indices": 14,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        },
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2,
+            "JOINTS_0": 3,
+            "WEIGHTS_0": 4
+          },
+          "material": 9,
+          "indices": 15,
+          "extensions": {
+            "FB_ngon_encoding": {}
+          }
+        }
+      ],
+      "name": "Batista_B"
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1,
+        16,
+        17
+      ],
+      "name": "root",
+      "translation": [
+        0,
+        9.6875,
+        0
+      ]
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "kosi",
+      "translation": [
+        0,
+        1.869140625,
+        0
+      ]
+    },
+    {
+      "children": [
+        3,
+        4,
+        7
+      ],
+      "name": "mune",
+      "translation": [
+        0,
+        2.2314453125,
+        0
+      ]
+    },
+    {
+      "name": "kubi",
+      "translation": [
+        0,
+        2.9501953125,
+        0
+      ]
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "l_sakotsu",
+      "translation": [
+        0,
+        1.763671875,
+        0
+      ]
+    },
+    {
+      "children": [
+        6
+      ],
+      "name": "l_ninoude",
+      "translation": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "children": [
+        11
+      ],
+      "name": "l_hizi",
+      "translation": [
+        2.81494140625,
+        0,
+        -0.050048828125
+      ]
+    },
+    {
+      "children": [
+        8
+      ],
+      "name": "r_sakotsu",
+      "translation": [
+        0,
+        1.763671875,
+        0
+      ]
+    },
+    {
+      "children": [
+        9
+      ],
+      "name": "r_ninoude",
+      "translation": [
+        -2,
+        0,
+        0
+      ]
+    },
+    {
+      "children": [
+        10
+      ],
+      "name": "r_hizi",
+      "translation": [
+        -2.81494140625,
+        0,
+        -0.050048828125
+      ]
+    },
+    {
+      "children": [
+        14,
+        15
+      ],
+      "name": "r_te",
+      "translation": [
+        -2.81494140625,
+        0,
+        0.050048828125
+      ]
+    },
+    {
+      "children": [
+        12,
+        13
+      ],
+      "name": "l_te",
+      "translation": [
+        2.81494140625,
+        0,
+        0.050048828125
+      ]
+    },
+    {
+      "name": "l_yubi00",
+      "translation": [
+        0.0927734375,
+        -0.149658203125,
+        0.301025390625
+      ]
+    },
+    {
+      "name": "l_yubi10",
+      "translation": [
+        1.125732421875,
+        0.132568359375,
+        0.10498046875
+      ]
+    },
+    {
+      "name": "r_yubi10",
+      "translation": [
+        -1.12548828125,
+        0.132568359375,
+        0.10498046875
+      ]
+    },
+    {
+      "name": "r_yubi00",
+      "translation": [
+        -0.0927734375,
+        -0.149658203125,
+        0.30078125
+      ]
+    },
+    {
+      "children": [
+        18
+      ],
+      "name": "l_momo",
+      "translation": [
+        1.14208984375,
+        0,
+        0.000244140625
+      ]
+    },
+    {
+      "children": [
+        19
+      ],
+      "name": "r_momo",
+      "translation": [
+        -1.14208984375,
+        0,
+        0.000244140625
+      ]
+    },
+    {
+      "children": [
+        20
+      ],
+      "name": "l_sune",
+      "translation": [
+        0,
+        -4.347900390625,
+        0.10009765625
+      ]
+    },
+    {
+      "children": [
+        21
+      ],
+      "name": "r_sune",
+      "translation": [
+        0,
+        -4.347900390625,
+        0.10009765625
+      ]
+    },
+    {
+      "name": "l_ashi",
+      "translation": [
+        0,
+        -4.347900390625,
+        -0.10009765625
+      ]
+    },
+    {
+      "name": "r_ashi",
+      "translation": [
+        0,
+        -4.347900390625,
+        -0.10009765625
+      ]
+    },
+    {
+      "mesh": 0,
+      "skin": 0,
+      "name": "Batista_B",
+      "children": [
+        0
+      ]
+    }
+  ],
+  "skins": [
+    {
+      "skeleton": 0,
+      "joints": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "inverseBindMatrices": 16
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        22
+      ],
+      "name": "Batista_B"
+    }
+  ],
+  "scene": 0,
+  "samplers": [
+    {
+      "wrapS": 33071,
+      "wrapT": 33071,
+      "magFilter": 9728,
+      "minFilter": 9728
+    }
+  ],
+  "images": [
+    {
+      "uri": "bti_arm_01.png"
+    },
+    {
+      "uri": "bti_body_01.png"
+    },
+    {
+      "uri": "bti_hand_01.png"
+    },
+    {
+      "uri": "bti_hiji_01.png"
+    },
+    {
+      "uri": "bti_knee_01.png"
+    },
+    {
+      "uri": "bti_tat_r_01.png"
+    },
+    {
+      "uri": "bti_neck_01.png"
+    },
+    {
+      "uri": "bti_momo_01.png"
+    },
+    {
+      "uri": "bti_Pan_01.png"
+    },
+    {
+      "uri": "bti_shoe_01.png"
+    },
+    {
+      "uri": "bti_tat_l_01.png"
+    }
+  ],
+  "textures": [
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "source": 5,
+      "sampler": 0
+    },
+    {
+      "source": 6,
+      "sampler": 0
+    },
+    {
+      "source": 7,
+      "sampler": 0
+    },
+    {
+      "source": 8,
+      "sampler": 0
+    },
+    {
+      "source": 9,
+      "sampler": 0
+    },
+    {
+      "source": 10,
+      "sampler": 0
+    }
+  ],
+  "materials": [
+    {
+      "name": "Arm",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Body",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "alphaMode": "MASK",
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Hand",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Hiji",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Knee",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 4
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Material",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 5
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Material1",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 6
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Momo",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 7
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "Pants",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 8
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "shoe",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 9
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    },
+    {
+      "name": "tape",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 10
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "KHR_materials_unlit": {}
+      },
+      "emissiveFactor": [
+        0.32258063554763796,
+        0.32258063554763796,
+        0.32258063554763796
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 50640,
+      "uri": "Batista_B.bin"
+    }
+  ]
+}

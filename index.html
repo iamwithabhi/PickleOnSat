@@ -3,323 +3,372 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pickleball Americano</title>
+<title>Pickle on Sat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:ital,wght@0,600;1,600;1,700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 0 auto; padding: 16px; }
-  .row { display: flex; gap: 16px; align-items: flex-start; }
-  .row.hidden { display: none; }
-  #play { flex: 1; min-width: 0; }
-  #simBox { width: 220px; }
-  #simBox h2 { color: #1b7f3b; }
+  :root {
+    --bg: #08080a;
+    --panel: #141418;
+    --well: #0c0c0f;
+    --frame: #e9e9ec;
+    --text: #f2f2f4;
+    --muted: #a6a6ae;
+    --red: #e0262f;
+    --green: #7be33c; /* only for "done / game over" statuses */
+    --accent: #c8161f; /* Tekken-3 crimson: button fill */
+    --accent-hi: #ff4a53; /* crimson-bright for text and highlights on the dark panels */
+    --accent-soft: #2b0b0e; /* selected / active background */
+    --crimson: #8f1218; /* frames and grid borders */
+    --border: 1px solid rgba(233, 233, 236, .38);
+    --hair: 1px solid rgba(233, 233, 236, .14);
+    --title: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --sans: 'Barlow', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text); font: 16px/1.5 var(--sans);
+    background: radial-gradient(ellipse 120% 70% at 50% -10%, #1e1e26 0%, var(--bg) 60%) no-repeat, var(--bg);
+  }
+  .hidden { display: none !important; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent-hi); outline-offset: 2px; }
+  .title { font-family: var(--title); font-style: italic; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* ---------- buttons ---------- */
+  /* Chiselled metal buttons: a lit top edge, a hard split in the gradient halfway down (like a polished bar),
+     a dark lower edge, and a solid ledge underneath that makes the button stand off the page.
+     --g / --s are the resting gradient + shadow, --ga / --sa the pressed ones; the primary button swaps them for blue. */
+  .btn {
+    --edge: #050507; --metal-top: #3a3b43; --metal-mid: #26272d; --metal-split: #15161a; --metal-low: #1e1f24;
+    --g0: linear-gradient(180deg, #3a3b43 0%, #26272d 49%, #15161a 51%, #1e1f24 100%);
+    --s0: inset 0 1px 0 rgba(255, 255, 255, .3), inset 1px 0 0 rgba(255, 255, 255, .09), inset -1px 0 0 rgba(0, 0, 0, .35),
+          inset 0 -1px 0 rgba(0, 0, 0, .6), 0 2px 0 #050507, 0 4px 6px rgba(0, 0, 0, .45);
+    --g: var(--g0); --s: var(--s0);
+    --ga: linear-gradient(180deg, #131418 0%, #1b1c21 49%, #25262c 51%, #2d2e35 100%);
+    --sa: inset 0 2px 5px rgba(0, 0, 0, .7), inset 0 -1px 0 rgba(255, 255, 255, .12), 0 0 0 #050507;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; position: relative;
+    background-color: #1c1d22; background-image: var(--g); border: 1px solid var(--edge); box-shadow: var(--s);
+    color: var(--text); text-shadow: 0 -1px 0 rgba(0, 0, 0, .65); padding: 9px 16px;
+    font-family: var(--title); font-style: italic; font-weight: 600; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .05em;
+    transition: transform .06s, filter .12s;
+  }
+  a.btn { color: var(--text); text-decoration: none; }
+  .btn:hover { color: var(--accent-hi); filter: brightness(1.18); }
+  .btn:active { transform: translateY(2px); background-image: var(--ga); box-shadow: var(--sa); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; color: var(--text); filter: none; }
+  .btn:disabled:active { transform: none; background-image: var(--g); box-shadow: var(--s); }
+  .btn.primary {
+    --edge: #3a0508; background-color: #c8161f; color: #fff; text-shadow: 0 -1px 0 rgba(40, 0, 3, .6);
+    --g: linear-gradient(180deg, #f4575f 0%, #d9222c 48%, #9d0f17 52%, #bf1a23 100%);
+    --s: inset 0 1px 0 rgba(255, 255, 255, .5), inset 1px 0 0 rgba(255, 255, 255, .16), inset -1px 0 0 rgba(0, 0, 0, .28),
+         inset 0 -1px 0 rgba(0, 0, 0, .45), 0 2px 0 #3a0508, 0 4px 7px rgba(140, 10, 18, .55);
+    --ga: linear-gradient(180deg, #6e0910 0%, #9d0f17 49%, #cf2029 51%, #e5404a 100%);
+    --sa: inset 0 2px 6px rgba(30, 0, 2, .7), inset 0 -1px 0 rgba(255, 255, 255, .25), 0 0 0 #3a0508;
+  }
+  .btn.primary:hover { color: #fff; }
+  .btn.primary:disabled { --edge: #050507; --g: var(--g0); --s: var(--s0); background-color: #1c1d22; color: var(--text); text-shadow: 0 -1px 0 rgba(0, 0, 0, .65); }
+  .btn.big { width: 100%; font-size: 1.3rem; padding: 12px 16px; }
+
+  /* ---------- header + nav (tab strip) ---------- */
+  header { position: sticky; top: 0; z-index: 5; background: rgba(8, 8, 10, .95); backdrop-filter: blur(6px); }
+  /* a chrome rail along the bottom edge, bevelled: lit top lip, shaded underside */
+  header::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -9px; height: 9px; pointer-events: none;
+    background: linear-gradient(180deg, #eceef2 0%, #b3b7c1 40%, #6a6e78 60%, #c9ccd4 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, .9), inset 0 -2px 0 rgba(0, 0, 0, .55), 0 6px 12px rgba(0, 0, 0, .5);
+  }
+  .bar { max-width: 560px; margin: 0 auto; padding: 12px 16px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.6rem; line-height: 1; white-space: nowrap; }
+  .logo svg { width: 24px; height: 24px; }
+  /* the tab strip is one chiselled metal bar; the open page's tab is pressed in and lit blue */
+  nav { display: flex; border: 1px solid #050507; background: #101115; box-shadow: 0 2px 0 #050507, 0 4px 6px rgba(0, 0, 0, .45); }
+  nav a {
+    flex: 1; text-align: center; padding: 9px 4px; color: var(--text); text-decoration: none; border-right: 1px solid #050507;
+    background-image: linear-gradient(180deg, #3a3b43 0%, #26272d 49%, #15161a 51%, #1e1f24 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 1px 0 0 rgba(255, 255, 255, .08), inset -1px 0 0 rgba(0, 0, 0, .35), inset 0 -1px 0 rgba(0, 0, 0, .6);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .65);
+    font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .05em;
+  }
+  nav a:last-child { border-right: 0; }
+  nav a:hover { color: var(--accent-hi); filter: brightness(1.18); }
+  nav a[aria-current="page"] {
+    color: #fff; filter: none; text-shadow: 0 0 8px rgba(255, 74, 83, .7);
+    background-image: linear-gradient(180deg, #2a0508 0%, #5c0c13 50%, #8f1520 100%);
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, .75), inset 0 -1px 0 rgba(255, 120, 126, .45), inset 1px 0 0 rgba(0, 0, 0, .35);
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+  .warn { border: 1px solid var(--red); background: #2a0d0f; padding: 10px 14px; margin: 0 0 16px; }
+
+  /* ---------- framed panels ---------- */
+  /* Thick chrome frame (10px): one solid metal body with light and dark patches running round the box, and a
+     bevel on both edges, lit from the top-left. The outer edge is a raised lip (bright top/left, dark bottom/right),
+     drawn by the ::before overlay; the inner edge is a recessed lip (dark top/left, bright bottom/right). */
+  .panel, .basic .box {
+    position: relative; border: 10px solid transparent;
+    border-image: linear-gradient(135deg, #f7f8fb 0%, #a9adb7 12%, #5d606a 26%, #e1e3e9 40%, #8b8f9a 54%, #eef0f4 68%, #666a74 82%, #dcdee4 100%) 1;
+    box-shadow:
+      inset 3px 3px 4px rgba(0, 0, 0, .75), inset -3px -3px 4px rgba(255, 255, 255, .22),
+      0 12px 26px rgba(0, 0, 0, .65);
+  }
+  .panel::before, .basic .box::before {
+    content: ''; position: absolute; inset: -10px; z-index: 3; pointer-events: none;
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .9), inset -2px -2px 0 rgba(0, 0, 0, .6);
+  }
+  .panel { background: linear-gradient(180deg, #1a1b20, #0f0f12); }
+  .panel-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 14px;
+    background: linear-gradient(180deg, #2a2b31, #141519);
+    /* chrome rule under the title, same metal as the frame (the gradient runs along the line) */
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #f7f8fb 0%, #a9adb7 12%, #5d606a 26%, #e1e3e9 40%, #8b8f9a 54%, #eef0f4 68%, #666a74 82%, #dcdee4 100%) 0 0 3 0;
+  }
+  .panel-head h2 { margin: 0; font-size: 1.55rem; line-height: 1.2; text-shadow: 0 2px 0 #000; }
+  /* the big red numeral with a white outline, like the round timer */
+  .panel-head .meta {
+    font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.7rem; line-height: 1; letter-spacing: .02em; white-space: nowrap;
+    color: #e5202b; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 0 0 10px rgba(229, 32, 43, .6);
+  }
+  .panel-sub {
+    text-align: center; padding: 3px 16px; color: #fff; border-bottom: 1px solid #000;
+    background: linear-gradient(180deg, #17181c 0%, #0b0b0d 100%);
+    font-family: var(--title); font-style: italic; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; text-shadow: 0 1px 0 #000;
+  }
+  .panel-body { padding: 16px; }
+  .error { color: #ff6b6b; font-weight: 500; margin: 8px 0 0; }
+  .error:empty { display: none; }
+
+  /* ---------- players page ---------- */
+  .players-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+
+  .add-form { display: flex; gap: 10px; }
+  .add-form input {
+    flex: 1; min-width: 0; background: var(--well); border: var(--border); padding: 10px 14px; font-size: 1.1rem;
+  }
+  .add-form input::placeholder { color: #8a8a92; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .suggest-chip {
+    background: var(--well); border: var(--hair); padding: 4px 12px; cursor: pointer; color: var(--muted);
+    font-family: var(--title); font-style: italic; font-weight: 600; font-size: 1.05rem; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .suggest-chip:hover { color: var(--accent-hi); border-color: rgba(255, 74, 83, .6); }
+  .locked-note { margin: 0; color: var(--muted); }
+
+  /* The roster is a character-select grid, two cells per row with a gap between them.
+     Each cell is a low-res coloured backdrop (--art) with the 3D head on it, a red "P 01" tab, and a white name plate. */
+  .roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; margin-top: 16px; }
+  .player { position: relative; display: flex; flex-direction: column; overflow: hidden; background: #000; box-shadow: 0 0 0 1px #000, 0 4px 10px rgba(0, 0, 0, .5); }
+  .player.new { animation: popIn .25s ease-out; }
+  @keyframes popIn { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+  .player .portrait {
+    position: relative; width: 100%; aspect-ratio: 4 / 3; flex: none; display: grid; place-items: center; overflow: hidden;
+    background-color: #1a1b20; background-image: var(--art, none); background-size: cover; background-position: center;
+  }
+  .player .portrait img { position: relative; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .player .portrait[data-show] { cursor: pointer; }
+  .player .portrait .initials { font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.6rem; color: #fff; text-shadow: 0 2px 0 #000; }
+  .player .slot-no {
+    position: absolute; left: 0; bottom: 0; z-index: 2; padding: 1px 9px 1px 6px;
+    background: linear-gradient(180deg, #c0161f, #74090f); border-top: 1px solid rgba(255, 255, 255, .4); border-right: 1px solid #000;
+    font-family: var(--title); font-style: italic; font-weight: 700; font-size: .78rem; line-height: 1.2; letter-spacing: .1em; color: #fff; text-shadow: 0 1px 0 #000;
+  }
+  .player .info { min-width: 0; padding: 5px 8px 6px; border-top: 1px solid #000; background: linear-gradient(180deg, #ffffff 0%, #dcdde1 55%, #c1c2c8 100%); }
+  .player .name {
+    font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.25rem; line-height: 1.15; color: #14151a;
+    text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+  }
+  .player .remove {
+    position: absolute; top: 4px; right: 4px; z-index: 2; width: 30px; height: 30px; padding: 0;
+    display: grid; place-items: center; border: 0; background: rgba(8, 8, 10, .55); color: rgba(242, 242, 244, .65);
+    cursor: pointer;
+  }
+  .player .remove svg { display: block; width: 16px; height: 16px; }
+  .player .remove:hover, .player .remove:focus-visible { color: #fff; background: var(--accent); }
+  /* empty slots: hatched dark cell and a dim plate */
+  .player.vacant .portrait { background-image: repeating-linear-gradient(-45deg, #131418 0 7px, #0d0e11 7px 14px); }
+  .player.vacant .slot-no { background: #2b2c31; border-top-color: rgba(255, 255, 255, .15); color: #9a9ba3; text-shadow: none; }
+  .player.vacant .info { background: linear-gradient(180deg, #34353b, #26272c); }
+  .player.vacant .name { color: #8b8c93; }
+
+  .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: var(--hair); }
+  .setting .label { font-family: var(--title); font-style: italic; font-weight: 600; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .04em; }
+  .seg { display: flex; border: var(--border); overflow: hidden; }
+  .seg button { border: 0; border-right: var(--hair); background: var(--well); padding: 4px 12px; min-width: 42px; cursor: pointer; font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.1rem; }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { color: var(--accent-hi); background: var(--accent-soft); }
+  .seg button:disabled { cursor: not-allowed; }
+  .readout { font-family: var(--title); font-style: italic; font-weight: 700; font-size: 1.3rem; }
+  .plan { color: var(--muted); font-size: .95rem; margin: 14px 0; }
+  .plan:empty { display: none; }
+  #startBtn { margin-top: 14px; }
+
+  /* ---------- matches + scores pages (basic for now) ---------- */
+  .basic .box { background: rgba(20, 20, 24, .94); padding: 16px; margin-bottom: 16px; }
+  .basic h2 { margin: 0 0 12px; font-family: var(--title); font-style: italic; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 1.45rem; }
+  .row { display: flex; flex-direction: column; gap: 16px; }
+  #play { min-width: 0; }
+  #simBox h2 { color: var(--accent-hi); }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
-  .chip { display: inline-flex; flex-direction: column; align-items: center; padding: 4px 10px; border: 1px solid #ccc; border-radius: 999px; background: #fff; cursor: pointer; font: inherit; font-size: 0.85em; line-height: 1.2; }
-  .chip small { font-size: 0.8em; }
-  .chip.done { border-color: #1b7f3b; color: #1b7f3b; background: #eef8f1; }
-  .chip.playing { border-color: #b26a00; color: #b26a00; background: #fff8e6; font-weight: 600; }
-  .chip.upcoming { color: #777; }
-  .chip.selected { outline: 2px solid #333; outline-offset: 1px; }
-  .confirm:empty { display: none; }
-  .confirm { border: 1px solid #b26a00; background: #fff8e6; border-radius: 6px; padding: 8px; margin-top: 8px; }
-  .confirm p { margin: 0 0 8px; }
-  @media (max-width: 640px) { .row { flex-direction: column; align-items: stretch; } #simBox { width: auto; } }
-  section { border: 1px solid #ccc; border-radius: 6px; padding: 12px; margin-bottom: 16px; }
-  h1 { font-size: 1.4em; } h2 { font-size: 1.1em; margin-top: 0; }
+  .chip { display: inline-flex; flex-direction: column; align-items: center; padding: 4px 12px; border: var(--hair); background: var(--well); cursor: pointer; font-size: .9em; line-height: 1.2; }
+  .chip small { font-size: .78em; }
+  .chip.done { color: var(--green); border-color: rgba(123, 227, 60, .5); }
+  .chip.playing { color: #ffd166; border-color: #ffd166; font-weight: 600; }
+  .chip.upcoming { color: var(--muted); }
+  .chip.selected { border: 1px solid var(--accent-hi); box-shadow: 0 0 0 1px var(--accent-hi); }
+  .court { padding: 10px 0; border-bottom: var(--hair); }
+  .court input[type=number] { width: 4em; background: var(--well); border: var(--hair); padding: 4px 6px; }
+  .court button { background: var(--well); border: var(--hair); padding: 4px 10px; cursor: pointer; }
+  .over { color: var(--green); font-weight: 600; }
+  .live { color: #ffd166; font-weight: 600; }
+  .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; }
-  th, td { border-bottom: 1px solid #ddd; padding: 4px 6px; text-align: left; }
-  input[type=number] { width: 4em; }
-  .error { color: #b00020; min-height: 1.2em; }
-  .over { color: #1b7f3b; font-weight: 600; }
-  .live { color: #b26a00; font-weight: 600; }
-  .court { padding: 8px 0; border-bottom: 1px dashed #ddd; }
-  .hidden { display: none; }
-  ul { padding-left: 20px; }
+  th, td { white-space: nowrap; }
+  th, td { border-bottom: var(--hair); padding: 8px 6px; text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  .confirm:empty { display: none; }
+  .confirm { border: 1px solid var(--red); background: #2a0d0f; padding: 12px; margin-top: 8px; }
+  .confirm p { margin: 0 0 10px; }
+  .empty-page { text-align: center; padding: 48px 16px; }
+  .empty-page p { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .player.new { animation: none; } }
 </style>
 </head>
 <body>
-<h1>Pickleball Americano</h1>
-<p id="storageWarn" class="error hidden">This browser view can't save data, so a refresh will lose the tournament.
-  Run <code>node serve.js</code> and open http://localhost:8123 instead.</p>
 
-<section id="setup">
-  <h2>Players (<span id="count">0</span> added)</h2>
-  <form id="addForm">
-    <input id="name" placeholder="Player name" autocomplete="off">
-    <button>Add</button>
-  </form>
-  <div class="error" id="setupError"></div>
-  <ol id="playerList"></ol>
-  <p>
-    Play to <select id="target"><option>6</option><option>8</option><option>11</option></select> points
-    &nbsp; Courts <select id="courts"><option>1</option></select>
-    &nbsp; Rounds <input type="number" id="rounds" min="1" max="50">
-  </p>
-  <p id="plan"></p>
-  <p><button id="equalBtn" class="hidden"></button></p>
-  <button id="startBtn">Start tournament</button>
-</section>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="pickleball" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="14" fill="#7be33c" stroke="#e9e9ec" stroke-width="2"/>
+    <g fill="#08080a">
+      <circle cx="16" cy="9" r="2"/><circle cx="9.5" cy="14" r="2"/><circle cx="22.5" cy="14" r="2"/>
+      <circle cx="12" cy="21.5" r="2"/><circle cx="20" cy="21.5" r="2"/><circle cx="16" cy="16" r="1.4"/>
+    </g>
+  </symbol>
+</svg>
 
-<div id="playRow" class="row hidden">
-<section id="play">
-  <h2 id="roundTitle"></h2>
-  <div id="roundChips" class="chips"></div>
-  <p id="byes"></p>
-  <div id="courtsBox"></div>
-  <div class="error" id="playError"></div>
-</section>
+<header>
+  <div class="bar">
+    <h1 class="logo title"><svg><use href="#pickleball"/></svg>Pickle on Sat</h1>
+    <nav aria-label="Pages">
+      <a href="#/players" data-route="players">Players</a>
+      <a href="#/matches" data-route="matches">Matches</a>
+      <a href="#/scores" data-route="scores">Scores</a>
+    </nav>
+  </div>
+</header>
 
-<section id="simBox">
-  <h2>Simulation</h2>
-  <p>Plays the remaining games one by one (about 1 second each) and records random scores.</p>
-  <button id="simBtn">Run simulation</button>
-  <p id="simStatus"></p>
-</section>
-</div>
+<main>
+  <p id="storageWarn" class="warn hidden">This browser view can't save data, so a refresh will lose the tournament.
+    Open the hosted site or run <code>node serve.js</code> and use http://localhost:8123 instead.</p>
 
-<section id="standingsBox" class="hidden">
-  <h2>Standings</h2>
-  <table>
-    <thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Diff</th><th>Played</th><th>Wins</th><th title="Rounds sat out so far / total rounds this player sits out in the whole tournament (fixed when the tournament starts)">Sit-outs (so far / total)</th></tr></thead>
-    <tbody id="standings"></tbody>
-  </table>
-  <h2>Start over</h2>
-  <p>Ends this tournament, deletes every score and takes you back to player setup.
-     Your player list is kept, so you can add or remove players, change the points target and start a fresh draw.</p>
-  <p><button id="resetBtn">Reset &amp; Play Again!</button></p>
-  <div id="resetConfirm" class="confirm"></div>
-</section>
+  <!-- ===================== PAGE 1: PLAYERS ===================== -->
+  <div id="page-players" data-page="players">
+    <div class="players-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="title">Players</h2>
+          <span class="meta"><span id="count">0</span>/24</span>
+        </div>
+        <div class="panel-sub">Americano · 1 court</div>
+        <div class="panel-body">
+          <form class="add-form" id="addForm" autocomplete="off">
+            <label for="name" class="hidden">Player name</label>
+            <input id="name" placeholder="Enter player name" maxlength="40">
+            <button class="btn primary" id="addBtn">Add</button>
+          </form>
+          <div class="suggest hidden" id="suggest" aria-label="Quick add"></div>
+          <p class="locked-note hidden" id="lockedNote">The tournament has started, so the roster is locked.
+            Reset from the Scores page to change players.</p>
+          <p class="error" id="setupError" role="alert"></p>
+          <div class="roster" id="roster" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-head"><h2 class="title">Match settings</h2></div>
+          <div class="panel-body">
+            <div class="setting">
+              <span class="label" id="targetLabel">Play to</span>
+              <div class="seg" id="target" role="group" aria-labelledby="targetLabel">
+                <button type="button" data-target="6">6</button>
+                <button type="button" data-target="8">8</button>
+                <button type="button" data-target="11">11</button>
+              </div>
+            </div>
+            <div class="setting">
+              <span class="label" id="courtsLabel">Courts</span>
+              <div class="seg" role="group" aria-labelledby="courtsLabel">
+                <button type="button" aria-pressed="true" disabled>1</button>
+              </div>
+            </div>
+            <div class="setting">
+              <span class="label" id="roundsLabel">Rounds</span>
+              <span class="readout" id="rounds" aria-labelledby="roundsLabel" aria-live="polite">–</span>
+            </div>
+            <p class="plan" id="plan"></p>
+            <button class="btn primary big" id="startBtn">Start tournament</button>
+            <button class="btn big hidden" id="toMatchesBtn">Go to matches →</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 2: MATCHES (basic) ===================== -->
+  <div id="page-matches" data-page="matches" class="basic hidden">
+    <div class="box empty-page hidden" id="matchesEmpty">
+      <h2>No matches yet</h2>
+      <p>Add at least 4 players and start the tournament on the Players page.</p>
+      <a class="btn" href="#/players">Go to players</a>
+    </div>
+    <div id="playRow" class="row">
+      <section id="play" class="box">
+        <h2 id="roundTitle"></h2>
+        <div id="roundChips" class="chips"></div>
+        <p id="byes"></p>
+        <div id="courtsBox"></div>
+        <div class="error" id="playError"></div>
+      </section>
+      <section id="simBox" class="box">
+        <h2>Simulation</h2>
+        <p>Plays the remaining games one by one (about 1 second each) and records random scores.</p>
+        <button class="btn" id="simBtn">Run simulation</button>
+        <p id="simStatus"></p>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 3: SCORES (basic) ===================== -->
+  <div id="page-scores" data-page="scores" class="basic hidden">
+    <div class="box empty-page hidden" id="scoresEmpty">
+      <h2>No scores yet</h2>
+      <p>The score table appears once the tournament has started.</p>
+      <a class="btn" href="#/players">Go to players</a>
+    </div>
+    <section id="standingsBox" class="box">
+      <h2>Standings</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Diff</th><th>Played</th><th>Wins</th><th title="Rounds sat out so far / total rounds this player sits out in the whole tournament (fixed when the tournament starts)">Sit-outs (so far / total)</th></tr></thead>
+        <tbody id="standings"></tbody>
+      </table></div>
+      <h2 style="margin-top:24px">Start over</h2>
+      <p>Ends this tournament, deletes every score and takes you back to player setup.
+         Your player list is kept, so you can add or remove players, change the points target and start a fresh draw.</p>
+      <p><button class="btn" id="resetBtn">Reset &amp; Play Again!</button></p>
+      <div id="resetConfirm" class="confirm"></div>
+    </section>
+  </div>
+</main>
 
 <script src="americano.js"></script>
-<script>
-  const STORE = 'americano-v1';
-  const COURTS = 1;
-  const $ = (id) => document.getElementById(id);
-  if (!window.Americano) {
-    $('addForm').onsubmit = (e) => e.preventDefault();
-    $('setupError').textContent = 'Could not load americano.js. Run "node serve.js" and open http://localhost:8123.';
-    throw new Error('americano.js not loaded');
-  }
-  let t;
-  try { t = Americano.Tournament.fromJSON(localStorage.getItem(STORE) || '{}'); } catch (e) { t = new Americano.Tournament(); }
-  if (!Array.isArray(t.players)) t = new Americano.Tournament();
-  // Screen state that also survives a refresh (kept apart from the tournament itself).
-  const UI_STORE = 'americano-ui-v1';
-  let ui = {};
-  try { ui = JSON.parse(localStorage.getItem(UI_STORE) || '{}') || {}; } catch (e) {}
-  let viewRound = Number.isInteger(ui.viewRound) ? ui.viewRound : null; // null = follow current round
-  let drafts = ui.drafts && typeof ui.drafts === 'object' ? ui.drafts : {}; // typed, unsaved scores: { "round-court": [a, b] }
-  let shownRound = 0; // round currently displayed
-  let sim = null; // { round, court } while a simulation is running
-  const GAME_MS = 1000; // each simulated game takes ~1 second
-
-  // Detect browsers/views where storage is blocked, so we can warn instead of silently losing data.
-  let canSave = true;
-  try { localStorage.setItem('americano-test', '1'); localStorage.removeItem('americano-test'); } catch (e) { canSave = false; }
-  const showStorageWarning = () => $('storageWarn').classList.toggle('hidden', canSave);
-  const saveUi = () => {
-    try {
-      localStorage.setItem(UI_STORE, JSON.stringify({ viewRound, drafts, name: $('name').value, simRunning: !!sim }));
-    } catch (e) {}
-  };
-
-  // In-page Yes/Cancel prompt (the browser's confirm() pop-up is blocked in some embedded views).
-  function askConfirm(box, message, yesLabel, onYes) {
-    box.innerHTML = `<p>${message}</p><button class="yes">${yesLabel}</button> <button class="no">Cancel</button>`;
-    box.querySelector('.yes').onclick = () => { box.innerHTML = ''; onYes(); };
-    box.querySelector('.no').onclick = () => { box.innerHTML = ''; };
-  }
-
-  const save = () => {
-    try { localStorage.setItem(STORE, JSON.stringify(t)); } catch (e) { canSave = false; showStorageWarning(); }
-  };
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-  function renderSetup() {
-    const n = t.playerCount;
-    $('count').textContent = n;
-    $('playerList').innerHTML = t.players
-      .map((p, i) => `<li>${esc(p)} ${t.started ? '' : `<button data-rm="${i}">remove</button>`}</li>`)
-      .join('');
-    $('addForm').classList.toggle('hidden', t.started);
-    $('startBtn').classList.toggle('hidden', t.started);
-    ['target', 'courts', 'rounds'].forEach((id) => ($(id).disabled = t.started));
-    $('target').value = t.settings.target;
-
-    const chosen = COURTS; // only 1 court offered for now
-    $('equalBtn').classList.add('hidden');
-    if (n < Americano.MIN_PLAYERS) {
-      $('rounds').value = '';
-      $('plan').textContent = `Add at least ${Americano.MIN_PLAYERS - n} more player(s) to start.`;
-      return;
-    }
-    const rounds = t.settings.rounds || Americano.defaultRounds(n);
-    if (document.activeElement !== $('rounds')) $('rounds').value = rounds;
-    const sit = n - chosen * 4;
-    const { min, max } = Americano.sitOutSpread(n, chosen, rounds);
-    let text = `${rounds} rounds on ${chosen} court(s). `;
-    if (!sit) text += 'Everyone plays every round.';
-    else if (min === max) text += `${sit} sit out each round; everyone sits out ${min} and plays ${rounds - min}.`;
-    else text += `${sit} sit out each round; sit-outs are uneven: some players sit out ${max}, others ${min}.`;
-    $('plan').textContent = text;
-    if (!t.started && sit && min !== max) {
-      const eq = Americano.equalSitOutRounds(n, chosen, rounds);
-      const each = Americano.sitOutSpread(n, chosen, eq).min;
-      $('equalBtn').textContent = `Make sit-outs equal: use ${eq} rounds (${each} sit-out${each === 1 ? '' : 's'} each)`;
-      $('equalBtn').dataset.rounds = eq;
-      $('equalBtn').classList.remove('hidden');
-    }
-  }
-
-  // A typed-but-unsaved score for this court, if any; otherwise the saved score.
-  const draft = (r, c, side, saved) => {
-    const d = drafts[`${r}-${c}`];
-    return d ? d[side] : saved;
-  };
-
-  function renderPlay() {
-    saveUi();
-    $('playRow').classList.toggle('hidden', !t.started);
-    $('standingsBox').classList.toggle('hidden', !t.started);
-    if (!t.started) return;
-    const cur = t.currentRoundIndex;
-    const total = t.rounds.length;
-    if (viewRound != null && !(viewRound >= 0 && viewRound < total)) viewRound = null;
-    $('simBtn').classList.toggle('hidden', t.finished);
-    $('simBtn').textContent = sim ? 'Stop simulation' : 'Run simulation';
-    $('simStatus').textContent = t.finished ? 'All games played.'
-      : sim && sim.round >= 0 ? `Simulating round ${sim.round + 1}, court ${sim.court + 1}…` : '';
-    $('roundTitle').textContent = t.finished
-      ? `Tournament complete (${total} rounds)`
-      : `Now playing: Round ${cur + 1} of ${total}`;
-    const r = viewRound == null ? (cur === -1 ? total - 1 : cur) : viewRound;
-    shownRound = r;
-    $('roundChips').innerHTML = t.rounds.map((round, i) => {
-      const state = round.matches.every((m) => m.over) ? 'done' : i === cur ? 'playing' : 'upcoming';
-      const label = { done: 'Done', playing: 'Playing', upcoming: 'Upcoming' }[state];
-      return `<button class="chip ${state}${i === r ? ' selected' : ''}" data-round="${i}">Round ${i + 1} <small>${label}</small></button>`;
-    }).join('');
-    const v = t.roundView(r);
-    $('byes').textContent = v.byes.length ? `Sitting out: ${v.byes.join(', ')}` : '';
-    const locked = cur !== -1 && r > cur;
-    $('courtsBox').innerHTML = v.matches.map((m, c) => `
-      <div class="court">
-        <b>Court ${m.court}:</b> ${esc(m.teamA.join(' & '))} <i>vs</i> ${esc(m.teamB.join(' & '))}<br>
-        <input type="number" min="0" id="a${c}" value="${esc(draft(r, c, 0, m.scoreA))}" ${locked ? 'disabled' : ''}> -
-        <input type="number" min="0" id="b${c}" value="${esc(draft(r, c, 1, m.scoreB))}" ${locked ? 'disabled' : ''}>
-        <button data-save="${c}" ${locked ? 'disabled' : ''}>Save score</button>
-        <span class="${m.over ? 'over' : 'live'}">${sim && sim.round === r && sim.court === c ? 'Simulating…' : m.status}${m.winner ? ` — ${esc(m.winner.join(' & '))} win` : ''}</span>
-      </div>`).join('');
-  }
-
-  function renderStandings() {
-    if (!t.started) return;
-    $('standings').innerHTML = t.standings().map((s) =>
-      `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes} / ${s.byesTotal}</td></tr>`
-    ).join('');
-  }
-
-  function render() { renderSetup(); renderPlay(); renderStandings(); }
-
-  $('addForm').onsubmit = (e) => {
-    e.preventDefault();
-    try { t.addPlayer($('name').value); $('name').value = ''; $('setupError').textContent = ''; save(); render(); }
-    catch (err) { $('setupError').textContent = err.message; }
-    $('name').focus();
-  };
-  $('playerList').onclick = (e) => {
-    const i = e.target.dataset.rm;
-    if (i == null) return;
-    t.removePlayer(t.players[i]); save(); render();
-  };
-  $('target').onchange = () => { t.configure({ target: +$('target').value }); save(); };
-  $('rounds').oninput = () => {
-    const v = Number($('rounds').value);
-    if (!Number.isInteger(v) || v < 1 || v > 50) return; // ignore while typing / out of range
-    t.configure({ rounds: v }); save(); renderSetup();
-  };
-  $('rounds').onblur = () => renderSetup(); // snap an invalid entry back to the saved value
-  $('equalBtn').onclick = () => {
-    t.configure({ rounds: +$('equalBtn').dataset.rounds }); save(); renderSetup();
-  };
-  $('startBtn').onclick = () => {
-    try {
-      t.configure({ courts: COURTS, seed: null });
-      t.start(); viewRound = null; drafts = {}; $('setupError').textContent = ''; save(); render();
-    } catch (err) { $('setupError').textContent = err.message; }
-  };
-  $('roundChips').onclick = (e) => {
-    const chip = e.target.closest('[data-round]');
-    if (chip) { viewRound = +chip.dataset.round; renderPlay(); } // renderPlay also saves the choice
-  };
-  $('courtsBox').onclick = (e) => {
-    const c = e.target.dataset.save;
-    if (c == null) return;
-    const r = shownRound;
-    const a = $('a' + c).value === '' ? NaN : Number($('a' + c).value);
-    const b = $('b' + c).value === '' ? NaN : Number($('b' + c).value);
-    try {
-      const before = t.currentRoundIndex;
-      t.recordScore(r, +c, a, b);
-      delete drafts[`${r}-${c}`];
-      $('playError').textContent = '';
-      if (t.currentRoundIndex !== before) viewRound = null; // jump to the new current round
-      save(); render();
-    } catch (err) { $('playError').textContent = `Court ${+c + 1}: ${err.message}`; }
-  };
-  $('courtsBox').oninput = (e) => {
-    const m = /^[ab](\d+)$/.exec(e.target.id);
-    if (!m) return;
-    const c = m[1];
-    drafts[`${shownRound}-${c}`] = [$('a' + c).value, $('b' + c).value];
-    saveUi();
-  };
-  $('name').oninput = saveUi;
-  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  // Plays every remaining game one at a time, a rally per tick, ~GAME_MS per game.
-  async function runSimulation() {
-    const me = (sim = { round: -1, court: -1 });
-    while (sim === me && !t.finished) {
-      const r = t.currentRoundIndex;
-      const c = t.rounds[r].matches.findIndex((m) => !m.over);
-      const m = t.rounds[r].matches[c];
-      me.round = r; me.court = c; viewRound = null;
-      const steps = Americano.simulateGame(m.scoreA, m.scoreB, t.settings.target);
-      render();
-      for (const [a, b] of steps) {
-        await sleep(GAME_MS / steps.length);
-        if (sim !== me) return;
-        try { t.recordScore(r, c, a, b); delete drafts[`${r}-${c}`]; }
-        catch (err) { // e.g. the score was edited by hand mid-simulation
-          sim = null; $('playError').textContent = `Simulation stopped: ${err.message}`; render(); return;
-        }
-        save(); render();
-      }
-    }
-    if (sim === me) { sim = null; render(); }
-  }
-
-  $('simBtn').onclick = () => {
-    if (sim) { sim = null; render(); return; }
-    $('playError').textContent = '';
-    runSimulation();
-  };
-
-  $('resetBtn').onclick = () => {
-    const done = t.rounds.reduce((s, r) => s + r.matches.filter((m) => m.over).length, 0);
-    askConfirm($('resetConfirm'),
-      `Delete all scores (${done} finished game(s)) and go back to setup? Your ${t.playerCount} players are kept.`,
-      'Yes, delete scores and start over', () => {
-        sim = null;
-        t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the chosen rounds
-        window.scrollTo(0, 0);
-      });
-  };
-
-  // Restore what was on screen before a refresh.
-  if (typeof ui.name === 'string') $('name').value = ui.name;
-  showStorageWarning();
-  render();
-  if (ui.simRunning && t.started && !t.finished) runSimulation(); // pick up where it left off
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
