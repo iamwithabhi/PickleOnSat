@@ -359,6 +359,7 @@ $('simBtn').onclick = () => {
 function renderStandings() {
   $('scoresEmpty').classList.toggle('hidden', t.started);
   $('standingsBox').classList.toggle('hidden', !t.started);
+  $('resetBox').classList.toggle('hidden', !t.started);
   if (!t.started) return;
   $('standings').innerHTML = t.standings().map((s) =>
     `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes} / ${s.byesTotal}</td></tr>`
@@ -375,8 +376,8 @@ function askConfirm(box, message, yesLabel, onYes) {
 $('resetBtn').onclick = () => {
   const done = t.rounds.reduce((s, r) => s + r.matches.filter((m) => m.over).length, 0);
   askConfirm($('resetConfirm'),
-    `Delete all scores (${done} finished game(s)) and go back to setup? Your ${t.playerCount} players are kept.`,
-    'Yes, delete scores and start over', () => {
+    `${done ? `All scores and ${done} played ${done === 1 ? 'game' : 'games'}` : 'All scores'} will be cleared. Player entries stay.`,
+    'Yes, start over', () => {
       sim = null;
       t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the players
       go('players');
