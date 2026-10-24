@@ -6,7 +6,7 @@ const UI_STORE = 'americano-ui-v1';
 const CHAR_STORE = 'americano-chars-v1';
 const BG_STORE = 'americano-bgs-v1';
 const COURTS = 1; // only 1 court offered for now
-const TRASH_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
+const CLOSE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const SUGGESTIONS =['Yoshi', 'Pratul', 'Kani', 'Sahil', 'Raj']; // regular players, offered as one-tap adds
 const GAME_MS = 1000; // each simulated game takes ~1 second
 
@@ -122,7 +122,7 @@ function renderRoster() {
       <div class="player${p === justAdded ? ' new' : ''}">
         <div class="portrait" data-show="${i}" ${bg ? `data-bg="${bg}"` : ''} title="${locked ? '' : 'Click for a different character'}">${art}
           <span class="no">${i + 1}</span>
-          ${locked ? '' : `<button class="remove" data-rm="${i}" aria-label="Remove ${esc(p)}" title="Remove">${TRASH_ICON}</button>`}
+          ${locked ? '' : `<button class="remove" data-rm="${i}" aria-label="Remove ${esc(p)}" title="Remove">${CLOSE_ICON}</button>`}
         </div>
         <div class="info">
           <div class="name" title="${esc(p)}">${esc(p)}</div>
