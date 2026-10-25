@@ -156,7 +156,7 @@
   /* once the tournament has started, the start button is replaced by a quiet status row that links to the rounds */
   .resume { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
   .resume .pulse { flex: none; width: 8px; height: 8px; background: var(--yellow); animation: pulse 1.6s ease-in-out infinite; }
-  .resume.done .pulse { background: var(--green); animation: none; }
+  .resume.done .pulse { background: var(--blue); animation: none; }
   @keyframes pulse { 50% { opacity: .3; } }
   .resume .what { flex: 1; min-width: 0; font-size: .95rem; font-weight: 500; line-height: 1.3; }
   .resume .go { flex: none; display: block; color: var(--blue-hi); }
@@ -171,9 +171,9 @@
   .row { display: flex; flex-direction: column; gap: 16px; }
   #page-scores .panel { margin-bottom: 16px; }
   /* the podium picture, with each player's name under their step */
-  .podium { position: relative; aspect-ratio: 4 / 3; margin-bottom: 30px; }
+  .podium { position: relative; aspect-ratio: 4 / 3; margin-bottom: 36px; }
   .podium img { display: block; width: 100%; height: 100%; }
-  .podium .pn { position: absolute; top: calc(100% + 8px); transform: translateX(-50%); max-width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: .85rem; }
+  .podium .pn { position: absolute; top: calc(100% + 8px); transform: translateX(-50%); max-width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-family: var(--pixel); font-size: 1.2rem; }
   .podium .pn.first { color: var(--text); }
   #page-scores .panel:last-child { margin-bottom: 0; }
   #play { min-width: 0; }
@@ -207,6 +207,16 @@
   th, td { white-space: nowrap; border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; }
   th { color: var(--muted); font-weight: 500; font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; }
   td:not(:nth-child(2)) { font-family: var(--mono); } /* every column except the player's name is a number */
+  /* ranking: fixed columns so the table lines up, the name takes the slack, numbers sit right-aligned under their headings */
+  #standingsBox table { table-layout: fixed; min-width: 360px; }
+  #standingsBox th, #standingsBox td { padding: 13px 8px; }
+  #standingsBox th:nth-child(n+3), #standingsBox td:nth-child(n+3) { text-align: right; }
+  #standingsBox th:first-child, #standingsBox td:first-child { width: 34px; padding-left: 4px; }
+  #standingsBox th:nth-child(3), #standingsBox th:nth-child(4), #standingsBox th:nth-child(6) { width: 52px; }
+  #standingsBox th:nth-child(5) { width: 68px; }
+  #standingsBox th:nth-child(7) { width: 76px; padding-right: 4px; }
+  #standingsBox td:last-child { padding-right: 4px; }
+  #standingsBox td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
   .confirm:empty { display: none; }
   /* the Yes / Cancel pair takes the place of the button that was tapped */
   .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -305,6 +315,11 @@
           <div class="error" id="playError"></div>
         </div>
       </section>
+      <a class="resume done hidden" id="doneLink" href="#/scores" aria-label="View rank">
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="what">All games played</span>
+        <svg class="go" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
       <div id="simBox" class="simbar">
         <button class="btn small ghost" id="simBtn">Run Test Simulation</button>
         <button class="btn small hidden" id="simConfirm">Confirm</button>

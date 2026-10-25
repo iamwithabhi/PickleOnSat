@@ -288,8 +288,8 @@ function renderPlay() {
   $('simBtn').classList.toggle('hidden', t.finished);
   $('simBtn').textContent = sim ? 'Stop Test Simulation' : 'Run Test Simulation';
   $('simConfirm').classList.toggle('hidden', !simAsk || !!sim || t.finished);
-  $('simStatus').textContent = t.finished ? 'All games played.'
-    : sim && sim.round >= 0 ? `Simulating round ${sim.round + 1}, court ${sim.court + 1}…` : '';
+  $('doneLink').classList.toggle('hidden', !t.finished);
+  $('simStatus').textContent = !t.finished && sim && sim.round >= 0 ? `Simulating round ${sim.round + 1}, court ${sim.court + 1}…` : '';
   $('roundTitle').textContent = t.finished
     ? `Tournament complete (${total} rounds)`
     : `Now playing: Round ${cur + 1} of ${total}`;
