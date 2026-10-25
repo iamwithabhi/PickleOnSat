@@ -13,7 +13,10 @@ const GAME_MS = 1000; // each simulated game takes ~1 second
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-const readJSON = (key) => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } };
+// Opening the page with ?demo (e.g. /?demo#/matches) shows a ready-made sample tournament that is never saved,
+// and ignores whatever real tournament is stored, so layouts can be checked without touching real data.
+const DEMO = new URLSearchParams(location.search).has('demo');
+const readJSON = (key) => { if (DEMO) return null; try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } };
 
 if (!window.Americano) {
   $('setupError').textContent = 'Could not load americano.js';
@@ -23,15 +26,23 @@ if (!window.Americano) {
 // ---------- state ----------
 
 let t;
-try { t = Americano.Tournament.fromJSON(localStorage.getItem(STORE) || '{}'); } catch (e) { t = new Americano.Tournament(); }
+try { t = Americano.Tournament.fromJSON(DEMO ? '{}' : localStorage.getItem(STORE) || '{}'); } catch (e) { t = new Americano.Tournament(); }
 if (!Array.isArray(t.players)) t = new Americano.Tournament();
+if (DEMO) { // five players, game point 11, round 1 finished, round 2 under way
+  t = new Americano.Tournament();
+  ['Yoshi', 'Pratul', 'Kani', 'Sahil', 'Raj'].forEach((p) => t.addPlayer(p));
+  t.configure({ courts: COURTS, seed: 7 });
+  t.start();
+  t.recordScore(0, 0, 11, 6);
+  t.recordScore(1, 0, 7, 5);
+  document.title += ' (demo)';
+}
 
 // Screen state that also survives a refresh (kept apart from the tournament itself).
 const ui = readJSON(UI_STORE) || {};
-let viewRound = Number.isInteger(ui.viewRound) ? ui.viewRound : null; // null = follow current round
 let drafts = ui.drafts && typeof ui.drafts === 'object' ? ui.drafts : {}; // typed, unsaved scores: { "round-court": [a, b] }
-let shownRound = 0; // round currently displayed
 let sim = null; // { round, court } while a simulation is running
+let simAsk = false; // the Confirm button next to "Run Test Simulation" is showing
 
 // Character and backdrop per player, keyed by lower-cased name.
 let chars = readJSON(CHAR_STORE) || {};
@@ -43,6 +54,7 @@ try { localStorage.setItem('americano-test', '1'); localStorage.removeItem('amer
 const showStorageWarning = () => $('storageWarn').classList.toggle('hidden', canSave);
 
 const save = () => {
+  if (DEMO) return;
   try {
     localStorage.setItem(STORE, JSON.stringify(t));
     localStorage.setItem(CHAR_STORE, JSON.stringify(chars));
@@ -50,14 +62,16 @@ const save = () => {
   } catch (e) { canSave = false; showStorageWarning(); }
 };
 const saveUi = () => {
+  if (DEMO) return;
   try {
-    localStorage.setItem(UI_STORE, JSON.stringify({ viewRound, drafts, name: $('name').value, simRunning: !!sim }));
+    localStorage.setItem(UI_STORE, JSON.stringify({ drafts, name: $('name').value, simRunning: !!sim }));
   } catch (e) {}
 };
 
 // ---------- characters ----------
 
 let gfx = null; // the 3D module, once loaded
+let crown = null; // still image of the crown shown beside a winning team
 const charKey = (name) => name.toLowerCase();
 const charOf = (name) => CHARACTERS.find((c) => c.id === chars[charKey(name)]) || null;
 
@@ -159,7 +173,14 @@ function renderSetup() {
   $('addForm').classList.toggle('hidden', locked);
   $('lockedNote').classList.toggle('hidden', !locked);
   $('startBtn').classList.toggle('hidden', locked);
-  $('toMatchesBtn').classList.toggle('hidden', !locked);
+  const resume = $('toMatchesBtn');
+  resume.classList.toggle('hidden', !locked);
+  if (locked) {
+    resume.classList.toggle('done', t.finished);
+    resume.href = t.finished ? '#/scores' : '#/matches';
+    resume.querySelector('.what').textContent = t.finished ? 'Tournament complete' : `Round ${t.currentRoundIndex + 1} of ${t.rounds.length} in play`;
+    resume.setAttribute('aria-label', t.finished ? 'View rank' : 'View play');
+  }
   $('addBtn').disabled = n >= Americano.MAX_PLAYERS;
   renderSuggestions();
 
@@ -236,11 +257,10 @@ $('target').onclick = (e) => {
 $('startBtn').onclick = () => {
   try {
     t.configure({ courts: COURTS, seed: null });
-    t.start(); viewRound = null; drafts = {}; $('setupError').textContent = ''; save(); render();
+    t.start(); drafts = {}; $('setupError').textContent = ''; save(); render();
     go('matches');
   } catch (err) { $('setupError').textContent = err.message; }
 };
-$('toMatchesBtn').onclick = () => go('matches');
 $('name').oninput = saveUi;
 
 // ---------- page 2: matches (basic) ----------
@@ -250,6 +270,13 @@ const draft = (r, c, side, saved) => {
   const d = drafts[`${r}-${c}`];
   return d ? d[side] : saved;
 };
+// What a score box shows: the picked-but-unsaved number, else the saved score. An untouched 0-0 shows empty,
+// so a score is only saved once both sides have been picked.
+const shownScore = (r, c, side) => {
+  const m = t.roundView(r).matches[c];
+  const started = m.over || m.scoreA > 0 || m.scoreB > 0;
+  return draft(r, c, side, started ? (side ? m.scoreB : m.scoreA) : '');
+};
 
 function renderPlay() {
   saveUi();
@@ -258,60 +285,83 @@ function renderPlay() {
   if (!t.started) return;
   const cur = t.currentRoundIndex;
   const total = t.rounds.length;
-  if (viewRound != null && !(viewRound >= 0 && viewRound < total)) viewRound = null;
   $('simBtn').classList.toggle('hidden', t.finished);
-  $('simBtn').textContent = sim ? 'Stop simulation' : 'Run simulation';
+  $('simBtn').textContent = sim ? 'Stop Test Simulation' : 'Run Test Simulation';
+  $('simConfirm').classList.toggle('hidden', !simAsk || !!sim || t.finished);
   $('simStatus').textContent = t.finished ? 'All games played.'
     : sim && sim.round >= 0 ? `Simulating round ${sim.round + 1}, court ${sim.court + 1}…` : '';
   $('roundTitle').textContent = t.finished
     ? `Tournament complete (${total} rounds)`
     : `Now playing: Round ${cur + 1} of ${total}`;
-  const r = viewRound == null ? (cur === -1 ? total - 1 : cur) : viewRound;
-  shownRound = r;
-  $('roundChips').innerHTML = t.rounds.map((round, i) => {
-    const state = round.matches.every((m) => m.over) ? 'done' : i === cur ? 'playing' : 'upcoming';
-    const label = { done: 'Done', playing: 'Playing', upcoming: 'Upcoming' }[state];
-    return `<button class="chip ${state}${i === r ? ' selected' : ''}" data-round="${i}">Round ${i + 1} <small>${label}</small></button>`;
+  // Every round, in order: status + round number on the left, the two teams in the middle, a score box on the right.
+  $('courtsBox').innerHTML = t.rounds.map((round, r) => {
+    const v = t.roundView(r);
+    const done = round.matches.every((m) => m.over);
+    const state = done ? 'done' : r === cur ? 'live' : r === cur + 1 ? 'next' : 'later';
+    const locked = r > cur && cur !== -1;
+    const teamRow = (m, c, side) => {
+      const team = side ? m.teamB : m.teamA;
+      const win = m.winner && m.winner.join() === team.join();
+      const val = shownScore(r, c, side);
+      const open = pick && pick.r === r && pick.c === c && pick.side === side;
+      const numbers = (now) => {
+        let nums = '';
+        for (let n = 0; n <= t.settings.target; n++) nums += `<button type="button" class="num${String(n) === String(now) ? ' on' : ''}" data-v="${n}">${n}</button>`;
+        return `<div class="nums">${nums}</div>`;
+      };
+      return `<div class="team${win ? ' win' : ''}">
+          <span class="names">${esc(team.join(' / '))}</span>${win && crown ? `<img class="crown" src="${crown}" alt="Winner" title="Winner">` : ''}
+          <button type="button" class="score${val === '' ? ' empty' : ''}${open ? ' open' : ''}" data-r="${r}" data-c="${c}" data-side="${side}" aria-label="Score for ${esc(team.join(' and '))}: ${val === '' ? 'not set' : val}" ${locked ? 'disabled' : ''}>${val === '' ? '–' : esc(val)}</button>
+        </div>${open ? numbers(val) : ''}`;
+    };
+    // once a game is decided the winning team moves to the top (the score boxes keep belonging to their own team)
+    const blocks = v.matches.map((m, c) => {
+      const order = m.winner && m.winner.join() === m.teamB.join() ? [1, 0] : [0, 1];
+      return `
+      <div class="match ${state}">
+        <div class="side"><span class="no">${String(r + 1).padStart(2, '0')}</span></div>
+        <div class="teams">${teamRow(m, c, order[0])}${teamRow(m, c, order[1])}</div>
+      </div>`;
+    }).join('');
+    return blocks;
   }).join('');
-  const v = t.roundView(r);
-  $('byes').textContent = v.byes.length ? `Sitting out: ${v.byes.join(', ')}` : '';
-  const locked = cur !== -1 && r > cur;
-  $('courtsBox').innerHTML = v.matches.map((m, c) => `
-    <div class="court">
-      <b>Court ${m.court}:</b> ${esc(m.teamA.join(' & '))} <i>vs</i> ${esc(m.teamB.join(' & '))}<br>
-      <input type="number" min="0" id="a${c}" value="${esc(draft(r, c, 0, m.scoreA))}" ${locked ? 'disabled' : ''}> -
-      <input type="number" min="0" id="b${c}" value="${esc(draft(r, c, 1, m.scoreB))}" ${locked ? 'disabled' : ''}>
-      <button data-save="${c}" ${locked ? 'disabled' : ''}>Save score</button>
-      <span class="${m.over ? 'over' : 'live'}">${sim && sim.round === r && sim.court === c ? 'Simulating…' : m.status}${m.winner ? ` — ${esc(m.winner.join(' & '))} win` : ''}</span>
-    </div>`).join('');
 }
 
-$('roundChips').onclick = (e) => {
-  const chip = e.target.closest('[data-round]');
-  if (chip) { viewRound = +chip.dataset.round; renderPlay(); } // renderPlay also saves the choice
-};
-$('courtsBox').onclick = (e) => {
-  const c = e.target.dataset.save;
-  if (c == null) return;
-  const r = shownRound;
-  const a = $('a' + c).value === '' ? NaN : Number($('a' + c).value);
-  const b = $('b' + c).value === '' ? NaN : Number($('b' + c).value);
+// Tapping a score box opens a row of every possible score (0 up to the game point) just below that team, wrapping if needed.
+let pick = null; // { r, c, side } while the numbers are open
+const closePicker = () => { pick = null; renderPlay(); };
+function openPicker(r, c, side) {
+  const same = pick && pick.r === r && pick.c === c && pick.side === side;
+  pick = same ? null : { r, c, side }; // tapping the same box again closes it
+  renderPlay();
+}
+// A score is saved as soon as both sides of a match have a number.
+function setScore(r, c, side, v) {
+  const both = [shownScore(r, c, 0), shownScore(r, c, 1)];
+  both[side] = String(v);
+  drafts[`${r}-${c}`] = both;
+  if (both[0] === '' || both[1] === '') { renderPlay(); return; } // wait for the other side; the pick is kept as a draft
   try {
-    const before = t.currentRoundIndex;
-    t.recordScore(r, +c, a, b);
+    t.recordScore(r, c, Number(both[0]), Number(both[1]));
     delete drafts[`${r}-${c}`];
     $('playError').textContent = '';
-    if (t.currentRoundIndex !== before) viewRound = null; // jump to the new current round
     save(); render();
-  } catch (err) { $('playError').textContent = `Court ${+c + 1}: ${err.message}`; }
+  } catch (err) { $('playError').textContent = `Round ${r + 1}: ${err.message}`; renderPlay(); }
+}
+$('courtsBox').onclick = (e) => {
+  const b = e.target.closest('.score');
+  if (b && !b.disabled) openPicker(+b.dataset.r, +b.dataset.c, +b.dataset.side);
 };
-$('courtsBox').oninput = (e) => {
-  const m = /^[ab](\d+)$/.exec(e.target.id);
-  if (!m) return;
-  const c = m[1];
-  drafts[`${shownRound}-${c}`] = [$('a' + c).value, $('b' + c).value];
-  saveUi();
-};
+$('courtsBox').addEventListener('click', (e) => {
+  const n = e.target.closest('.num');
+  if (!n || !pick) return;
+  const { r, c, side } = pick;
+  pick = null;
+  setScore(r, c, side, +n.dataset.v);
+});
+// tap anywhere else to close (the tapped element may already be re-rendered away, so look at the original path)
+document.addEventListener('click', (e) => { if (pick && !e.composedPath().includes($('courtsBox'))) closePicker(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pick) closePicker(); });
 
 // Plays every remaining game one at a time, a rally per tick, ~GAME_MS per game.
 async function runSimulation() {
@@ -320,7 +370,7 @@ async function runSimulation() {
     const r = t.currentRoundIndex;
     const c = t.rounds[r].matches.findIndex((m) => !m.over);
     const m = t.rounds[r].matches[c];
-    me.round = r; me.court = c; viewRound = null;
+    me.round = r; me.court = c;
     const steps = Americano.simulateGame(m.scoreA, m.scoreB, t.settings.target);
     render();
     for (const [a, b] of steps) {
@@ -336,11 +386,18 @@ async function runSimulation() {
   if (sim === me) { sim = null; render(); }
 }
 
+// Starting a test simulation overwrites scores, so the first tap only brings up a small Confirm button beside it.
 $('simBtn').onclick = () => {
   if (sim) { sim = null; render(); return; }
+  simAsk = !simAsk; // tapping again dismisses it
+  renderPlay();
+};
+$('simConfirm').onclick = () => {
+  simAsk = false;
   $('playError').textContent = '';
   runSimulation();
 };
+document.addEventListener('click', (e) => { if (simAsk && !e.target.closest('#simBox')) { simAsk = false; renderPlay(); } });
 
 // ---------- page 3: scores (basic) ----------
 
@@ -348,31 +405,66 @@ function renderStandings() {
   $('scoresEmpty').classList.toggle('hidden', t.started);
   $('standingsBox').classList.toggle('hidden', !t.started);
   $('resetBox').classList.toggle('hidden', !t.started);
-  if (!t.started) return;
-  $('standings').innerHTML = t.standings().map((s) =>
+  if (!t.started) { $('podiumBox').classList.add('hidden'); return; }
+  const standings = t.standings();
+  $('standings').innerHTML = standings.map((s) =>
     `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes} / ${s.byesTotal}</td></tr>`
   ).join('');
+  renderPodium(standings);
+}
+
+// The top three on the podium, once at least one game has been played. The picture is drawn again only when
+// the three players (or their characters) change.
+let podiumKey = '', podiumTicket = 0;
+async function renderPodium(standings) {
+  const top = standings.slice(0, 3);
+  const show = gfx && top.length === 3 && standings.some((s) => s.played > 0) && top.every((s) => charOf(s.name));
+  $('podiumBox').classList.toggle('hidden', !show);
+  if (!show) return;
+  const ids = top.map((s) => charOf(s.name).id);
+  const key = top.map((s, i) => `${s.name}:${ids[i]}`).join('|');
+  if (key === podiumKey) return;
+  podiumKey = key;
+  const ticket = ++podiumTicket;
+  try {
+    const { url, centres } = await gfx.podiumScene(ids);
+    if (ticket !== podiumTicket) return; // a newer ranking has already been asked for
+    $('podiumImg').src = url;
+    $('podiumImg').alt = `Podium: 1st ${top[0].name}, 2nd ${top[1].name}, 3rd ${top[2].name}`;
+    [['pn2', 1, 0], ['pn1', 0, 1], ['pn3', 2, 2]].forEach(([id, who, step]) => {
+      $(id).textContent = top[who].name;
+      $(id).style.left = `${centres[step] * 100}%`;
+    });
+  } catch (e) { console.warn('Podium unavailable.', e); podiumKey = ''; }
 }
 
 // In-page Yes/Cancel prompt (the browser's confirm() pop-up is blocked in some embedded views).
-function askConfirm(box, message, yesLabel, onYes) {
-  box.innerHTML = `<p>${message}</p><button class="btn yes">${yesLabel}</button> <button class="btn no">Cancel</button>`;
-  box.querySelector('.yes').onclick = () => { box.innerHTML = ''; onYes(); };
-  box.querySelector('.no').onclick = () => { box.innerHTML = ''; };
+// The pair appears in the place of the button that was tapped, which is hidden until the prompt is closed.
+function askConfirm(trigger, box, yesLabel, onYes) {
+  const close = () => { box.innerHTML = ''; trigger.classList.remove('hidden'); };
+  trigger.classList.add('hidden');
+  box.innerHTML = `<button class="btn yes">${yesLabel}</button><button class="btn icon no" aria-label="Cancel" title="Cancel">${CLOSE_ICON}</button>`;
+  box.querySelector('.yes').onclick = () => { close(); onYes(); };
+  box.querySelector('.no').onclick = close;
 }
 
 $('resetBtn').onclick = () => {
-  const done = t.rounds.reduce((s, r) => s + r.matches.filter((m) => m.over).length, 0);
-  askConfirm($('resetConfirm'),
-    `${done ? `All scores and ${done} played ${done === 1 ? 'game' : 'games'}` : 'All scores'} will be cleared. Player entries stay.`,
-    'Yes, start over', () => {
+  askConfirm($('resetBtn'), $('resetConfirm'), 'Clear Scores', () => {
       sim = null;
-      t.reset(); t.settings.courts = null; viewRound = null; drafts = {}; save(); render(); // keeps the players
+      t.reset(); t.settings.courts = null; drafts = {}; save(); render(); // keeps the players
       go('players');
     });
 };
 
-function render() { renderSetup(); renderPlay(); renderStandings(); }
+// Play and Rank have nothing to show until a tournament has started, so those tabs are switched off until then.
+function updateNav() {
+  document.querySelectorAll('nav a').forEach((a) => {
+    const off = a.dataset.route !== 'players' && !t.started;
+    if (off) { a.setAttribute('aria-disabled', 'true'); a.tabIndex = -1; } else { a.removeAttribute('aria-disabled'); a.removeAttribute('tabindex'); }
+  });
+}
+
+function render() { renderSetup(); renderPlay(); renderStandings(); updateNav(); }
 
 // ---------- tap feedback ----------
 
@@ -395,9 +487,11 @@ async function loadCharacters() {
       logo.querySelector('img').src = url;
       logo.classList.add('has-img');
     }).catch((e) => console.warn('Podium logo unavailable.', e));
+    mod.crownImage().then((url) => { crown = url; renderPlay(); }).catch((e) => console.warn('Crown unavailable.', e));
     await mod.preload();
     gfx = mod;
     renderRoster();
+    renderStandings(); // the podium needs the 3D module
   } catch (e) {
     console.warn('3D characters unavailable, using initials instead.', e);
   }

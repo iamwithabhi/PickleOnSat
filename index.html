@@ -44,23 +44,30 @@
 
   /* ---------- buttons ---------- */
   /* Flat white buttons. The main action's label is blue. */
-  .btn, .court button {
+  .btn {
     --label: #0b0c0e;
     position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
     padding: 11px 16px; background: #fff; border: 1px solid #fff; color: var(--label);
-    font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; text-decoration: none;
+    font-weight: 700; font-size: .9rem; letter-spacing: .02em; text-decoration: none;
     transition: transform .08s ease-out;
     touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
   }
-  .btn:hover, .court button:hover:not(:disabled) { --label: #1a6fd4; }
+  .btn:hover:not(:disabled) { --label: #1a6fd4; }
   /* pressed: the button stays where it is and keeps its colour; it just scales down */
-  .btn:active:not(:disabled), .court button:active:not(:disabled) { transform: scale(.96); }
-  .btn:disabled, .court button:disabled { opacity: .35; cursor: not-allowed; transform: none; --label: #0b0c0e; }
+  .btn:active:not(:disabled) { transform: scale(.96); }
+  .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; --label: #0b0c0e; }
   .btn.primary { --label: #1a6fd4; }
   .btn.primary:hover { --label: #0f58b0; }
   .btn.primary:disabled { --label: #0b0c0e; }
-  .btn.big { width: 100%; padding: 15px 16px; font-size: .84rem; }
-  .court button { padding: 6px 14px; font-weight: 600; font-size: .78rem; }
+  .btn.big { width: 100%; padding: 15px 16px; font-size: 1rem; }
+  /* a small, quiet button: outline only, muted label (used for the test-only simulation) */
+  .btn.icon { padding: 13px; } /* just an icon, no words */
+  .btn.icon svg { display: block; }
+  .btn.small { padding: 6px 12px; font-size: .8rem; font-weight: 500; }
+  .btn.ghost { --label: var(--muted); background: transparent; border-color: var(--line-2); }
+  .btn.ghost:hover:not(:disabled) { --label: var(--text); }
+  .simbar { display: flex; align-items: center; gap: 12px; }
+  #simStatus { color: var(--muted); font-size: .8rem; }
 
   /* ---------- header + tabs ---------- */
   header { position: sticky; top: 0; z-index: 5; background: rgba(11, 12, 14, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
@@ -80,6 +87,7 @@
   }
   nav a:first-child { margin-left: 0; }
   nav a:hover { color: var(--blue-hi); background: #202228; }
+  nav a[aria-disabled="true"] { opacity: .4; pointer-events: none; cursor: not-allowed; }
   nav a[aria-current="page"] { position: relative; color: var(--text); box-shadow: inset 0 -3px 0 var(--yellow); }
   main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
   .warn { border: 1px solid var(--danger); background: rgba(255, 93, 104, .08); padding: 10px 14px; margin: 0 0 16px; }
@@ -87,7 +95,8 @@
   /* ---------- panels ---------- */
   .panel, .basic .box { background: var(--surface); border: 1px solid var(--line); }
   .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
-  .panel-head h2 { font-size: 1.1rem; }
+  .panel-head.bare { border-bottom: 0; padding-bottom: 0; } /* a heading with no divider, straight into the content below */
+  .panel .panel-head h2 { margin: 0; font-size: 1.1rem; }
   .panel-body { padding: 14px 16px 16px; }
   .error { color: var(--danger); font-weight: 500; margin: 8px 0 0; }
   .error:empty { display: none; }
@@ -144,6 +153,14 @@
   .facts td { padding: 0 4px 6px; font-family: var(--mono); font-size: 1.05rem; font-weight: 600; color: var(--yellow); }  /* the hint sits directly on top of the Start button, like a caption for it */
   .plan { color: var(--muted); font-size: .85rem; text-align: center; margin: 28px 0 8px; }
   .plan:empty { display: none; }
+  /* once the tournament has started, the start button is replaced by a quiet status row that links to the rounds */
+  .resume { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+  .resume .pulse { flex: none; width: 8px; height: 8px; background: var(--yellow); animation: pulse 1.6s ease-in-out infinite; }
+  .resume.done .pulse { background: var(--green); animation: none; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  .resume .what { flex: 1; min-width: 0; font-size: .95rem; font-weight: 500; line-height: 1.3; }
+  .resume .go { flex: none; display: block; color: var(--blue-hi); }
+  .resume:hover { background: #202228; }
   #startBtn, #toMatchesBtn { margin-top: 24px; } /* same gap under the table before and after the tournament starts */
   .plan:not(:empty) + #startBtn { margin-top: 0; }
 
@@ -152,27 +169,47 @@
   .basic h2 { margin: 0 0 12px; font-size: 1.1rem; }
   .basic p { color: var(--muted); }
   .row { display: flex; flex-direction: column; gap: 16px; }
+  #page-scores .panel { margin-bottom: 16px; }
+  /* the podium picture, with each player's name under their step */
+  .podium { position: relative; aspect-ratio: 4 / 3; margin-bottom: 30px; }
+  .podium img { display: block; width: 100%; height: 100%; }
+  .podium .pn { position: absolute; top: calc(100% + 8px); transform: translateX(-50%); max-width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: .85rem; }
+  .podium .pn.first { color: var(--text); }
+  #page-scores .panel:last-child { margin-bottom: 0; }
   #play { min-width: 0; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
-  .chip { display: inline-flex; flex-direction: column; align-items: center; padding: 5px 12px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: .82rem; font-weight: 500; line-height: 1.25; }
-  .chip small { font-size: .7rem; font-weight: 400; }
-  .chip.done { color: var(--green); }
-  .chip.playing { color: var(--yellow); }
-  .chip.upcoming { color: var(--muted); }
-  .chip.selected { border-color: var(--blue); background: var(--blue-soft); }
-  .court { padding: 12px 0; border-bottom: 1px solid var(--line); color: var(--text); }
-  .court input[type=number] { width: 4.2em; background: var(--bg); border: 1px solid var(--line-2); padding: 6px 8px; font-family: var(--mono); }
-  .court input[type=number]:focus { outline: none; border-color: var(--blue); }
-  .over { color: var(--green); font-weight: 600; }
-  .live { color: var(--yellow); font-weight: 600; }
+  /* one block per match: status + round number on the left, the two teams in the middle, a score box on the right */
+  .match { display: grid; grid-template-columns: 64px minmax(0, 1fr); margin-bottom: 12px; }
+  /* the round number; only the round in play gets the solid yellow block */
+  .match .side { display: grid; place-items: center; background: #2a2b30; color: var(--muted); font-family: var(--pixel); font-weight: 400; }
+  .match .no { font-size: 1.9rem; line-height: 1; }
+  .match.live .side { background: var(--yellow); color: #111; }
+  .match .teams { display: grid; } /* the rows overlap by their 1px border, so there is a single line between the two teams */
+  .match .teams > * + * { margin-top: -1px; }
+  .team { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 7px 8px 7px 14px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); }
+  .team .names { flex: 0 1 auto; min-width: 0; font-size: 1.02rem; overflow-wrap: anywhere; }
+  /* mirrored so it leans the other way, tipped a little more, lifted a few pixels and kept clear of the names */
+  .team.win .names { color: var(--yellow); }
+  .team .crown { flex: none; width: 28px; height: 28px; margin-left: 2px; object-fit: contain; transform: translateY(-4px) scaleX(-1) rotate(-8deg); }
+  .team .score { margin-left: auto; }
+  .team .score { flex: none; width: 52px; height: 40px; padding: 0; background: #2a2b30; color: var(--text); border: 0; font-family: var(--mono); font-size: 1.1rem; cursor: pointer; }
+  .team .score.empty { color: var(--muted); }
+  .team .score:hover:not(:disabled) { filter: brightness(1.2); }
+  .team .score:disabled { opacity: .45; cursor: not-allowed; }
+  .team .score.open { box-shadow: inset 0 0 0 1px #fff; } /* the one whose numbers are showing */
+  /* every possible score in one row just below the tapped team; wraps onto more lines when there isn't room */
+  .nums { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 8px 10px 14px; background: var(--surface-2); border: 1px solid var(--line); }
+  .num { flex: none; width: 40px; height: 40px; padding: 0; background: transparent; border: 1px solid var(--line-2); color: var(--text); font-family: var(--mono); font-size: 1.05rem; cursor: pointer; }
+  .num:hover { border-color: var(--muted); }
+  .num.on { background: #fff; border-color: #fff; color: #111; }
+  .match.later { opacity: .6; }
   .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; }
   th, td { white-space: nowrap; border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; }
   th { color: var(--muted); font-weight: 500; font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; }
   td:not(:nth-child(2)) { font-family: var(--mono); } /* every column except the player's name is a number */
   .confirm:empty { display: none; }
-  .confirm { border: 1px solid var(--danger); background: rgba(255, 93, 104, .08); padding: 12px; margin-top: 8px; }
-  .confirm p { margin: 0 0 10px; color: var(--text); }
+  /* the Yes / Cancel pair takes the place of the button that was tapped */
+  .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .empty-page { text-align: center; padding: 48px 16px; }
   @media (prefers-reduced-motion: reduce) { .player.new { animation: none; } }
 </style>
@@ -194,8 +231,8 @@
     <h1 class="logo" title="Pickle on Sat"><svg aria-hidden="true"><use href="#pickleball"/></svg><img alt="" aria-hidden="true"><span class="sr-only">Pickle on Sat</span></h1>
     <nav aria-label="Pages">
       <a href="#/players" data-route="players">Setup</a>
-      <a href="#/matches" data-route="matches">Rounds</a>
-      <a href="#/scores" data-route="scores">Scores</a>
+      <a href="#/matches" data-route="matches">Play</a>
+      <a href="#/scores" data-route="scores">Rank</a>
     </nav>
   </div>
 </header>
@@ -219,7 +256,7 @@
           </form>
           <div class="suggest hidden" id="suggest" aria-label="Quick add"></div>
           <p class="locked-note hidden" id="lockedNote">The tournament has started, so the roster is locked.
-            Reset from the Scores page to change players.</p>
+            Reset from the Rank page to change players.</p>
           <p class="error" id="setupError" role="alert"></p>
           <div class="roster" id="roster" aria-live="polite"></div>
         </div>
@@ -227,7 +264,7 @@
 
       <aside class="side">
         <section class="panel">
-          <div class="panel-head" style="border-bottom:0;padding-bottom:0"><h2 id="targetLabel">Game point</h2></div>
+          <div class="panel-head bare"><h2 id="targetLabel">Game point</h2></div>
           <div class="panel-body">
             <div class="settings">
               <div class="seg" id="target" role="group" aria-labelledby="targetLabel">
@@ -242,7 +279,11 @@
             </div>
             <p class="plan" id="plan"></p>
             <button class="btn primary big" id="startBtn">Americano!</button>
-            <button class="btn big hidden" id="toMatchesBtn">Go to rounds →</button>
+            <a class="resume hidden" id="toMatchesBtn" href="#/matches">
+              <span class="pulse" aria-hidden="true"></span>
+              <span class="what"></span>
+              <svg class="go" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
           </div>
         </section>
       </aside>
@@ -254,22 +295,21 @@
     <div class="box empty-page hidden" id="matchesEmpty">
       <h2>No rounds yet</h2>
       <p>Add at least 4 players and start the tournament on the Setup page.</p>
-      <a class="btn" href="#/players">Go to setup</a>
+      <a class="btn" href="#/players">Go To Setup</a>
     </div>
     <div id="playRow" class="row">
-      <section id="play" class="box">
-        <h2 id="roundTitle"></h2>
-        <div id="roundChips" class="chips"></div>
-        <p id="byes"></p>
-        <div id="courtsBox"></div>
-        <div class="error" id="playError"></div>
+      <section id="play" class="panel">
+        <div class="panel-head"><h2 id="roundTitle"></h2></div>
+        <div class="panel-body">
+          <div id="courtsBox"></div>
+          <div class="error" id="playError"></div>
+        </div>
       </section>
-      <section id="simBox" class="box">
-        <h2>Simulation</h2>
-        <p>Plays the remaining games one by one (about 1 second each) and records random scores.</p>
-        <button class="btn" id="simBtn">Run simulation</button>
-        <p id="simStatus"></p>
-      </section>
+      <div id="simBox" class="simbar">
+        <button class="btn small ghost" id="simBtn">Run Test Simulation</button>
+        <button class="btn small hidden" id="simConfirm">Confirm</button>
+        <span id="simStatus"></span>
+      </div>
     </div>
   </div>
 
@@ -278,19 +318,32 @@
     <div class="box empty-page hidden" id="scoresEmpty">
       <h2>No scores yet</h2>
       <p>The score table appears once the tournament has started.</p>
-      <a class="btn" href="#/players">Go to setup</a>
+      <a class="btn" href="#/players">Go To Setup</a>
     </div>
-    <section id="standingsBox" class="box">
-      <h2>Standings</h2>
-      <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Diff</th><th>Played</th><th>Wins</th><th title="Rounds sat out so far / total rounds this player sits out in the whole tournament (fixed when the tournament starts)">Sit-outs (so far / total)</th></tr></thead>
-        <tbody id="standings"></tbody>
-      </table></div>
+    <section id="podiumBox" class="panel hidden">
+      <div class="panel-head"><h2>Podium</h2></div>
+      <div class="panel-body">
+        <div class="podium">
+          <img id="podiumImg" alt="">
+          <span class="pn" id="pn2"></span><span class="pn first" id="pn1"></span><span class="pn" id="pn3"></span>
+        </div>
+      </div>
     </section>
-    <section id="resetBox" class="box">
-      <h2>Start over</h2>
-      <p><button class="btn" id="resetBtn">Reset &amp; Play Again!</button></p>
-      <div id="resetConfirm" class="confirm"></div>
+    <section id="standingsBox" class="panel">
+      <div class="panel-head"><h2>Ranking</h2></div>
+      <div class="panel-body">
+        <div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Player</th><th>Pts</th><th>Diff</th><th>Played</th><th>Wins</th><th title="Rounds sat out so far / total rounds this player sits out in the whole tournament (fixed when the tournament starts)">Sit-out</th></tr></thead>
+          <tbody id="standings"></tbody>
+        </table></div>
+      </div>
+    </section>
+    <section id="resetBox" class="panel">
+      <div class="panel-head bare"><h2>One more Americano?</h2></div>
+      <div class="panel-body">
+        <button class="btn" id="resetBtn">Let's Go!</button>
+        <div id="resetConfirm" class="confirm"></div>
+      </div>
     </section>
   </div>
 </main>
