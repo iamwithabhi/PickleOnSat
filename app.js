@@ -171,7 +171,6 @@ function renderSetup() {
   const n = t.playerCount;
   const locked = t.started;
   $('addForm').classList.toggle('hidden', locked);
-  $('lockedNote').classList.toggle('hidden', !locked);
   $('startBtn').classList.toggle('hidden', locked);
   const resume = $('toMatchesBtn');
   resume.classList.toggle('hidden', !locked);
@@ -316,12 +315,14 @@ function renderPlay() {
     };
     // once a game is decided the winning team moves to the top (the score boxes keep belonging to their own team)
     const blocks = v.matches.map((m, c) => {
-      const order = m.winner && m.winner.join() === m.teamB.join() ? [1, 0] : [0, 1];
+      const key = `${r}-${c}`;
+      if (m.winner && !settled.has(key)) settleLater(key);
+      const order = m.winner && settled.has(key) && m.winner.join() === m.teamB.join() ? [1, 0] : [0, 1];
       return `
       <div class="match ${state}">
         <div class="side"><span class="no">${String(r + 1).padStart(2, '0')}</span></div>
         <div class="teams">${teamRow(m, c, order[0])}${teamRow(m, c, order[1])}</div>
-      </div>`;
+      </div>${scoreError && scoreError.r === r && scoreError.c === c ? '<p class="score-error">Check the score again!</p>' : ''}`;
     }).join('');
     return blocks;
   }).join('');
@@ -329,10 +330,24 @@ function renderPlay() {
 
 // Tapping a score box opens a row of every possible score (0 up to the game point) just below that team, wrapping if needed.
 let pick = null; // { r, c, side } while the numbers are open
+let scoreError = null; // { r, c } of the game whose score was just rejected
+// A decided game moves its winner to the top, but only a few seconds after the score goes in, so the list doesn't jump
+// the instant a number is tapped. `settled` = games whose rows are already in final order; `pending` = waiting for it.
+const SETTLE_MS = 4000;
+const settled = new Set(), pending = new Set();
+let settleGen = 0; // bumped on reset so timers from the old tournament do nothing
+const settleAll = () => t.rounds.forEach((rd, r) => rd.matches.forEach((m, c) => { if (m.over) settled.add(`${r}-${c}`); }));
+const settleLater = (key) => {
+  if (pending.has(key)) return;
+  pending.add(key);
+  const gen = settleGen;
+  setTimeout(() => { if (gen !== settleGen) return; pending.delete(key); settled.add(key); renderPlay(); }, SETTLE_MS);
+};
 const closePicker = () => { pick = null; renderPlay(); };
 function openPicker(r, c, side) {
   const same = pick && pick.r === r && pick.c === c && pick.side === side;
   pick = same ? null : { r, c, side }; // tapping the same box again closes it
+  scoreError = null; // they're about to correct it
   renderPlay();
 }
 // A score is saved as soon as both sides of a match have a number.
@@ -345,8 +360,10 @@ function setScore(r, c, side, v) {
     t.recordScore(r, c, Number(both[0]), Number(both[1]));
     delete drafts[`${r}-${c}`];
     $('playError').textContent = '';
+    scoreError = null;
+    settled.delete(`${r}-${c}`); // a changed score may change the winner: let it settle again before the rows swap
     save(); render();
-  } catch (err) { $('playError').textContent = `Round ${r + 1}: ${err.message}`; renderPlay(); }
+  } catch (err) { scoreError = { r, c }; renderPlay(); } // the score doesn't add up (e.g. neither side reached the target): flag that game
 }
 $('courtsBox').onclick = (e) => {
   const b = e.target.closest('.score');
@@ -438,6 +455,10 @@ async function renderPodium(standings) {
   } catch (e) { console.warn('Podium unavailable.', e); podiumKey = ''; }
 }
 
+// The ranking table scrolls sideways on small screens: mark it once it has moved so the pinned columns show their edge.
+const rankWrap = $('standingsBox').querySelector('.table-wrap');
+rankWrap.addEventListener('scroll', () => rankWrap.classList.toggle('scrolled', rankWrap.scrollLeft > 0));
+
 // In-page Yes/Cancel prompt (the browser's confirm() pop-up is blocked in some embedded views).
 // The pair appears in the place of the button that was tapped, which is hidden until the prompt is closed.
 function askConfirm(trigger, box, yesLabel, onYes) {
@@ -451,6 +472,7 @@ function askConfirm(trigger, box, yesLabel, onYes) {
 $('resetBtn').onclick = () => {
   askConfirm($('resetBtn'), $('resetConfirm'), 'Clear Scores', () => {
       sim = null;
+      settleGen++; settled.clear(); pending.clear();
       t.reset(); t.settings.courts = null; drafts = {}; save(); render(); // keeps the players
       go('players');
     });
@@ -461,6 +483,7 @@ function updateNav() {
   document.querySelectorAll('nav a').forEach((a) => {
     const off = a.dataset.route !== 'players' && !t.started;
     if (off) { a.setAttribute('aria-disabled', 'true'); a.tabIndex = -1; } else { a.removeAttribute('aria-disabled'); a.removeAttribute('tabindex'); }
+    a.classList.toggle('live', a.dataset.route === 'matches' && t.started && !t.finished); // the pulsing marker: a game is in play
   });
 }
 
@@ -497,6 +520,7 @@ async function loadCharacters() {
   }
 }
 
+settleAll(); // games already decided when the page opens are in their final order straight away
 ensureCharacters(); save();
 if (typeof ui.name === 'string') $('name').value = ui.name;
 showStorageWarning();

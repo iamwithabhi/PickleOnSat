@@ -56,9 +56,6 @@
   /* pressed: the button stays where it is and keeps its colour; it just scales down */
   .btn:active:not(:disabled) { transform: scale(.96); }
   .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; --label: #0b0c0e; }
-  .btn.primary { --label: #1a6fd4; }
-  .btn.primary:hover { --label: #0f58b0; }
-  .btn.primary:disabled { --label: #0b0c0e; }
   .btn.big { width: 100%; padding: 15px 16px; font-size: 1rem; }
   /* a small, quiet button: outline only, muted label (used for the test-only simulation) */
   .btn.icon { padding: 13px; } /* just an icon, no words */
@@ -87,6 +84,7 @@
   }
   nav a:first-child { margin-left: 0; }
   nav a:hover { color: var(--blue-hi); background: #202228; }
+  nav a.live::before { content: ''; flex: none; width: 8px; height: 8px; margin-right: 8px; background: var(--yellow); animation: pulse 1.6s ease-in-out infinite; }
   nav a[aria-disabled="true"] { opacity: .4; pointer-events: none; cursor: not-allowed; }
   nav a[aria-current="page"] { position: relative; color: var(--text); box-shadow: inset 0 -3px 0 var(--yellow); }
   main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
@@ -98,7 +96,8 @@
   .panel-head.bare { border-bottom: 0; padding-bottom: 0; } /* a heading with no divider, straight into the content below */
   .panel .panel-head h2 { margin: 0; font-size: 1.1rem; }
   .panel-body { padding: 14px 16px 16px; }
-  .error { color: var(--danger); font-weight: 500; margin: 8px 0 0; }
+  .error { color: var(--danger); font-weight: 400; font-size: .8rem; margin: 8px 0 0; }
+  .basic .score-error { margin: -4px 0 12px; color: var(--danger); font-size: .8rem; font-weight: 400; } /* sits right under the game it is about */
   .error:empty { display: none; }
 
   /* ---------- players page ---------- */
@@ -110,7 +109,6 @@
   .suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .suggest-chip { background: transparent; border: 1px solid rgba(31, 132, 242, .5); padding: 5px 10px; cursor: pointer; color: var(--blue-hi); font-size: .8rem; font-weight: 500; }
   .suggest-chip:hover { background: var(--blue-soft); border-color: var(--blue); }
-  .locked-note { margin: 0; color: var(--muted); }
 
   /* roster: two cards per row. Picture on top (delete icon in its corner), then one bar: a yellow number block and the name */
   .roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
@@ -207,16 +205,30 @@
   th, td { white-space: nowrap; border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; }
   th { color: var(--muted); font-weight: 500; font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; }
   td:not(:nth-child(2)) { font-family: var(--mono); } /* every column except the player's name is a number */
-  /* ranking: fixed columns so the table lines up, the name takes the slack, numbers sit right-aligned under their headings */
-  #standingsBox table { table-layout: fixed; min-width: 360px; }
-  #standingsBox th, #standingsBox td { padding: 13px 8px; }
+  /* ranking: rank + name stay pinned on the left while the numbers scroll under them. The name column is exactly as wide
+     as the longest name (it takes any spare room on wide screens); numbers are right-aligned under their headings. */
+  #standingsBox table { border-collapse: separate; border-spacing: 0; } /* collapsed borders don't stay with sticky cells */
+  #standingsBox tbody tr:nth-child(even) > *, #standingsBox thead tr > * { --row: var(--surface-2); }
+  /* whole-pixel row heights (22 + 13 + 13 + 1 line = 49): pinned cells are snapped to the pixel grid by the browser, so
+     fractional heights made their row lines drift away from the scrolling cells' lines */
+  #standingsBox th, #standingsBox td { padding: 13px 8px; line-height: 22px; background: var(--row, var(--surface)); }
+  #standingsBox th { padding-top: 15px; padding-bottom: 15px; line-height: 18px; }
+  #standingsBox .table-wrap { color-scheme: dark; scrollbar-width: thin; scrollbar-color: #3a3b41 transparent; }
   #standingsBox th:nth-child(n+3), #standingsBox td:nth-child(n+3) { text-align: right; }
-  #standingsBox th:first-child, #standingsBox td:first-child { width: 34px; padding-left: 4px; }
-  #standingsBox th:nth-child(3), #standingsBox th:nth-child(4), #standingsBox th:nth-child(6) { width: 52px; }
-  #standingsBox th:nth-child(5) { width: 68px; }
-  #standingsBox th:nth-child(7) { width: 76px; padding-right: 4px; }
-  #standingsBox td:last-child { padding-right: 4px; }
-  #standingsBox td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+  #standingsBox th:nth-child(n+3) { min-width: 52px; }
+  #standingsBox th:nth-child(5) { min-width: 68px; }
+  #standingsBox th:nth-child(7) { min-width: 76px; }
+  #standingsBox th:nth-child(2), #standingsBox td:nth-child(2) { width: 100%; padding-right: 14px; }
+  #standingsBox th:first-child, #standingsBox td:first-child { width: 50px; min-width: 50px; padding-left: 16px; }
+  #standingsBox th:first-child, #standingsBox td:first-child, #standingsBox th:nth-child(2), #standingsBox td:nth-child(2) { position: sticky; z-index: 1; }
+  #standingsBox th:first-child, #standingsBox td:first-child { left: 0; }
+  /* the name cell reaches 1px under the rank cell so no hairline shows between the two pinned cells */
+  #standingsBox th:nth-child(2), #standingsBox td:nth-child(2) { left: 50px; box-shadow: -1px 0 0 var(--row, var(--surface)); }
+  #standingsBox .table-wrap.scrolled th:nth-child(2), #standingsBox .table-wrap.scrolled td:nth-child(2) { box-shadow: -1px 0 0 var(--row, var(--surface)), 1px 0 0 var(--line); } /* edge of the pinned part, only once the numbers are sliding under it */
+  /* the table runs edge to edge in its panel: rows line up with the heading above (16px in) and stripes reach the borders */
+  #standingsBox .panel-body { padding: 0; }
+  #standingsBox td:last-child, #standingsBox th:last-child { padding-right: 16px; }
+  #standingsBox tbody tr:last-child td { border-bottom: 0; }
   .confirm:empty { display: none; }
   /* the Yes / Cancel pair takes the place of the button that was tapped */
   .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -265,8 +277,6 @@
             <button class="btn primary" id="addBtn">Add</button>
           </form>
           <div class="suggest hidden" id="suggest" aria-label="Quick add"></div>
-          <p class="locked-note hidden" id="lockedNote">The tournament has started, so the roster is locked.
-            Reset from the Rank page to change players.</p>
           <p class="error" id="setupError" role="alert"></p>
           <div class="roster" id="roster" aria-live="polite"></div>
         </div>
