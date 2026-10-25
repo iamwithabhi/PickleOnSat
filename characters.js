@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { CHARACTERS } from './character-list.js';
+import { CHARACTERS } from './character-list.js?v=202610251620';
 
 export { CHARACTERS };
 

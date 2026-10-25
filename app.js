@@ -1,5 +1,5 @@
 // Page logic: routing, players page, matches + scores (basic).
-import { CHARACTERS, BACKGROUNDS } from './character-list.js';
+import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610251620';
 
 const STORE = 'americano-v1';
 const UI_STORE = 'americano-ui-v1';
@@ -336,7 +336,7 @@ let scoreError = null; // { r, c } of the game whose score was just rejected
 const SETTLE_MS = 4000;
 const settled = new Set(), pending = new Set();
 let settleGen = 0; // bumped on reset so timers from the old tournament do nothing
-const settleAll = () => t.rounds.forEach((rd, r) => rd.matches.forEach((m, c) => { if (m.over) settled.add(`${r}-${c}`); }));
+const settleAll = () => (t.rounds || []).forEach((rd, r) => rd.matches.forEach((m, c) => { if (m.over) settled.add(`${r}-${c}`); }));
 const settleLater = (key) => {
   if (pending.has(key)) return;
   pending.add(key);
@@ -504,7 +504,7 @@ document.addEventListener('pointerdown', (e) => {
 // The page works straight away (cards show initials); portraits swap in once the 3D models load.
 async function loadCharacters() {
   try {
-    const mod = await import('./characters.js');
+    const mod = await import('./characters.js?v=202610251620');
     mod.podiumImage().then((url) => {
       const logo = document.querySelector('.logo');
       logo.querySelector('img').src = url;

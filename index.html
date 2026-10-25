@@ -373,7 +373,9 @@
   </div>
 </main>
 
-<script src="americano.js"></script>
-<script type="module" src="app.js"></script>
+<!-- the ?v= number ties these files to this page: GitHub Pages lets browsers keep each file for 10 minutes, so without it an old
+     script can end up running against a new page (or the other way round). Run `node tools/stamp.js` before each push. -->
+<script src="americano.js?v=202610251620"></script>
+<script type="module" src="app.js?v=202610251620"></script>
 </body>
 </html>
