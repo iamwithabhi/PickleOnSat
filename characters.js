@@ -61,9 +61,7 @@ function makeStage(width, height) {
   return { renderer, scene, camera };
 }
 
-export const SPIN_FRAMES = 20; // frames in one full turn
-const SPIN_W = 256, SPIN_H = 192;
-const portraits = new Map(); // id -> URL of the turntable strip (SPIN_FRAMES portraits side by side)
+const portraits = new Map(); // id -> data URL
 
 /**
  * Load every character and render a still portrait of each.
@@ -71,26 +69,17 @@ const portraits = new Map(); // id -> URL of the turntable strip (SPIN_FRAMES po
  * characters that fail to load simply have no portrait.
  */
 export async function preload(onProgress) {
-  const stage = makeStage(SPIN_W, SPIN_H); // 4:3, matches the card picture
+  const stage = makeStage(256, 192); // 4:3, matches the card picture
   let done = 0;
   await Promise.all(CHARACTERS.map(async (c) => {
     try {
       const model = await loadModel(c);
+      model.rotation.y = -0.3;
       stage.scene.add(model);
-      // one full turn, drawn side by side into a single strip; the page steps through it with CSS
-      const strip = document.createElement('canvas');
-      strip.width = SPIN_W * SPIN_FRAMES; strip.height = SPIN_H;
-      const ctx = strip.getContext('2d');
-      for (let f = 0; f < SPIN_FRAMES; f++) {
-        model.rotation.y = -0.3 + (f / SPIN_FRAMES) * Math.PI * 2;
-        stage.renderer.render(stage.scene, stage.camera);
-        ctx.drawImage(stage.renderer.domElement, f * SPIN_W, 0);
-      }
-      // take the model off the shared stage before awaiting, or another character would be drawn into this one's frames
+      stage.renderer.render(stage.scene, stage.camera);
+      portraits.set(c.id, stage.renderer.domElement.toDataURL('image/png'));
       stage.scene.remove(model);
       model.rotation.y = 0;
-      const blob = await new Promise((res) => strip.toBlob(res, 'image/png'));
-      portraits.set(c.id, URL.createObjectURL(blob));
     } catch (e) {
       console.warn('Character failed to load:', c.name, e);
     }

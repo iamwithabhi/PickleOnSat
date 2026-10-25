@@ -43,25 +43,22 @@
   h1, h2 { margin: 0; font-family: var(--pixel); font-weight: 400; letter-spacing: 0; }
 
   /* ---------- buttons ---------- */
-  /* White buttons with depth: a soft white-to-grey face, a solid ledge underneath and a shadow below that.
-     Pressing sinks the button onto its ledge. The main action's ledge is blue and its label blue. */
+  /* Flat white buttons. The main action's label is blue. */
   .btn, .court button {
-    --ledge: #8d919c; --label: #0b0c0e; --lift: 3px; /* --lift = how tall the ledge is = how far the button travels when pressed */
+    --label: #0b0c0e;
     position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
-    padding: 11px 16px; background: linear-gradient(180deg, #ffffff 0%, #f0f1f4 100%); border: 1px solid #fff; color: var(--label);
+    padding: 11px 16px; background: #fff; border: 1px solid #fff; color: var(--label);
     font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; text-decoration: none;
-    /* raised: bright top edge, shaded bottom edge, solid ledge, then a soft cast shadow */
-    box-shadow: 0 var(--lift) 0 var(--ledge), 0 calc(var(--lift) + 3px) 8px rgba(0, 0, 0, .3);
     transition: transform .08s ease-out;
     touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
   }
-  .btn:hover, .court button:hover:not(:disabled) { background: linear-gradient(180deg, #ffffff 0%, #f1f3f6 100%); --label: #1a6fd4; }
+  .btn:hover, .court button:hover:not(:disabled) { --label: #1a6fd4; }
   /* pressed: the button stays where it is and keeps its colour; it just scales down */
   .btn:active:not(:disabled), .court button:active:not(:disabled) { transform: scale(.96); }
   .btn:disabled, .court button:disabled { opacity: .35; cursor: not-allowed; transform: none; --label: #0b0c0e; }
-  .btn.primary { --ledge: #1a6fd4; --label: #1a6fd4; }
+  .btn.primary { --label: #1a6fd4; }
   .btn.primary:hover { --label: #0f58b0; }
-  .btn.primary:disabled { --label: #0b0c0e; --ledge: #8d919c; }
+  .btn.primary:disabled { --label: #0b0c0e; }
   .btn.big { width: 100%; padding: 15px 16px; font-size: .84rem; }
   .court button { padding: 6px 14px; font-weight: 600; font-size: .78rem; }
 
@@ -108,6 +105,7 @@
 
   /* roster: two cards per row. Picture on top (delete icon in its corner), then one bar: a yellow number block and the name */
   .roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+  .roster:empty { display: none; }
   .player { position: relative; display: flex; flex-direction: column; overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); }
   .player.new { animation: fadeIn .2s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -115,10 +113,6 @@
     position: relative; width: 100%; aspect-ratio: 4 / 3; flex: none; display: grid; place-items: center; overflow: hidden;
     background: #17181c;
   }
-  /* turntable: a strip of 20 frames, stepped through so the character turns a full circle (20 frames, 20 steps) */
-  .player .portrait .spin { width: 100%; height: 100%; background: no-repeat 0 0 / 2000% 100%; animation: spin 8s steps(20, end) infinite; }
-  /* 20 steps ending at 20/19 of the way: frame k sits at k/19 of the background travel, so every frame lands exactly */
-  @keyframes spin { to { background-position: 105.2632% 0; } }
   .player .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .player .portrait[data-show] { cursor: pointer; }
   .player .portrait .initials { font-weight: 700; font-size: 1.4rem; color: #fff; }
@@ -130,12 +124,9 @@
   .player .remove svg { display: block; width: 15px; height: 15px; }
   .player .remove:hover, .player .remove:focus-visible { background: var(--danger); color: #fff; }
   /* an empty slot is the same card with a blank picture and a grey number block */
-  .player.vacant .portrait { background-image: none; background-color: #0a0a0b; }
-  .player.vacant .no { background: #2a2b30; color: var(--muted); }
-  .player.vacant .name { color: var(--muted); }
 
   /* match settings: a stacked layout, label on top, then a full-width row of equal choices, then one summary line */
-  .settings { display: grid; gap: 14px; }
+  .settings { display: grid; gap: 24px; }
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); }
   .seg button { margin-left: -1px; padding: 16px 0; background: var(--surface-2); border: 1px solid var(--line-2); cursor: pointer; font-weight: 500; font-size: 1.25rem; line-height: 1.2; }
   .seg button:first-child { margin-left: 0; }
@@ -146,11 +137,11 @@
   .seg button[aria-pressed="true"]:disabled { cursor: default; }
   /* one read-only line: "5 rounds played on 1 court", with the number in the accent yellow */
   /* the small read-only table: rounds, courts, and what each player gets */
-  table.facts { width: 100%; border: 1px solid var(--line-2); table-layout: fixed; }
+  table.facts { width: 100%; border: 1px solid var(--line); table-layout: fixed; }
   .facts th, .facts td { text-align: center; border: 0; border-left: 1px solid var(--line); white-space: normal; }
   .facts th:first-child, .facts td:first-child { border-left: 0; }
-  .facts th { padding: 9px 4px 6px; font-size: .66rem; line-height: 1.25; letter-spacing: .08em; color: var(--muted); }
-  .facts td { padding: 2px 4px 12px; font-family: var(--mono); font-size: 1.35rem; font-weight: 600; color: var(--yellow); }  /* the hint sits directly on top of the Start button, like a caption for it */
+  .facts th { padding: 6px 4px 2px; font-size: .66rem; line-height: 1.25; letter-spacing: .08em; color: var(--muted); }
+  .facts td { padding: 0 4px 6px; font-family: var(--mono); font-size: 1.05rem; font-weight: 600; color: var(--yellow); }  /* the hint sits directly on top of the Start button, like a caption for it */
   .plan { color: var(--muted); font-size: .85rem; text-align: center; margin: 28px 0 8px; }
   .plan:empty { display: none; }
   #startBtn, #toMatchesBtn { margin-top: 24px; } /* same gap under the table before and after the tournament starts */
@@ -236,7 +227,7 @@
 
       <aside class="side">
         <section class="panel">
-          <div class="panel-head"><h2 id="targetLabel">Play till</h2></div>
+          <div class="panel-head" style="border-bottom:0;padding-bottom:0"><h2 id="targetLabel">Game point</h2></div>
           <div class="panel-body">
             <div class="settings">
               <div class="seg" id="target" role="group" aria-labelledby="targetLabel">

@@ -115,7 +115,7 @@ function renderRoster() {
     const c = charOf(p);
     const img = c && gfx && gfx.portrait(c.id);
     const art = img
-      ? `<div class="spin" style="background-image:url(${img});animation-delay:-${(i * 0.9).toFixed(1)}s"></div>`
+      ? `<img src="${img}" alt="">`
       : `<span class="initials">${esc(p.slice(0, 2).toUpperCase())}</span>`;
     const bg = bgOf(p);
     return `
@@ -129,18 +129,6 @@ function renderRoster() {
         </div>
       </div>`;
   });
-  // empty slots: enough to reach the minimum, plus one more if needed so the last grid row is never a black hole
-  let missing = Math.max(0, Americano.MIN_PLAYERS - t.playerCount);
-  if (!locked && (t.playerCount + missing) % 2 === 1 && t.playerCount + missing < Americano.MAX_PLAYERS) missing++;
-  for (let i = 0; i < missing; i++) {
-    cards.push(`
-      <div class="player vacant">
-        <div class="portrait"><span class="no">${t.playerCount + i + 1}</span></div>
-        <div class="info">
-          <div class="name">Player</div>
-        </div>
-      </div>`);
-  }
   $('roster').innerHTML = cards.join('');
   justAdded = null;
 }
@@ -184,7 +172,7 @@ function renderSetup() {
   $('startBtn').disabled = !enough;
   if (!enough) {
     showRounds('?');
-    $('plan').textContent = `Add at least ${Americano.MIN_PLAYERS - n} more player${Americano.MIN_PLAYERS - n === 1 ? '' : 's'} to start.`;
+    $('plan').textContent = `Add ${Americano.MIN_PLAYERS} or more players to start`;
     renderRoster();
     return;
   }
