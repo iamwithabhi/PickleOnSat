@@ -1,5 +1,5 @@
 // Page logic: routing, players page, matches + scores (basic).
-import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610251620';
+import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610261949';
 
 const STORE = 'americano-v1';
 const UI_STORE = 'americano-ui-v1';
@@ -41,6 +41,8 @@ if (DEMO) { // five players, game point 11, round 1 finished, round 2 under way
 // Screen state that also survives a refresh (kept apart from the tournament itself).
 const ui = readJSON(UI_STORE) || {};
 let drafts = ui.drafts && typeof ui.drafts === 'object' ? ui.drafts : {}; // typed, unsaved scores: { "round-court": [a, b] }
+// Which team serves first in each game, chosen at random once and kept across refreshes: { "round-court": 0 | 1 } (0 = first team listed)
+let serves = ui.serves && typeof ui.serves === 'object' ? ui.serves : {};
 let sim = null; // { round, court } while a simulation is running
 let simAsk = false; // the Confirm button next to "Run Test Simulation" is showing
 
@@ -64,7 +66,7 @@ const save = () => {
 const saveUi = () => {
   if (DEMO) return;
   try {
-    localStorage.setItem(UI_STORE, JSON.stringify({ drafts, name: $('name').value, simRunning: !!sim }));
+    localStorage.setItem(UI_STORE, JSON.stringify({ drafts, serves, name: $('name').value, simRunning: !!sim }));
   } catch (e) {}
 };
 
@@ -256,7 +258,7 @@ $('target').onclick = (e) => {
 $('startBtn').onclick = () => {
   try {
     t.configure({ courts: COURTS, seed: null });
-    t.start(); drafts = {}; $('setupError').textContent = ''; save(); render();
+    t.start(); drafts = {}; serves = {}; $('setupError').textContent = ''; save(); render();
     go('matches');
   } catch (err) { $('setupError').textContent = err.message; }
 };
@@ -278,6 +280,9 @@ const shownScore = (r, c, side) => {
 };
 
 function renderPlay() {
+  if (t.started) { // a coin toss for every game that doesn't have one yet (also covers a tournament saved before this existed)
+    t.rounds.forEach((rd, r) => rd.matches.forEach((m, c) => { if (serves[`${r}-${c}`] === undefined) serves[`${r}-${c}`] = Math.random() < 0.5 ? 0 : 1; }));
+  }
   saveUi();
   $('matchesEmpty').classList.toggle('hidden', t.started);
   $('playRow').classList.toggle('hidden', !t.started);
@@ -308,8 +313,10 @@ function renderPlay() {
         for (let n = 0; n <= t.settings.target; n++) nums += `<button type="button" class="num${String(n) === String(now) ? ' on' : ''}" data-v="${n}">${n}</button>`;
         return `<div class="nums">${nums}</div>`;
       };
+      const serves1st = state === 'live' && !m.over && serves[`${r}-${c}`] === side; // a small pixel ball marks who serves first in the game being played
       return `<div class="team${win ? ' win' : ''}">
           <span class="names">${esc(team.join(' / '))}</span>${win && crown ? `<img class="crown" src="${crown}" alt="Winner" title="Winner">` : ''}
+          ${serves1st ? '<svg class="serve" viewBox="0 0 7 7" role="img" aria-label="Serves first" shape-rendering="crispEdges"><title>Serves first</title><path fill="currentColor" fill-rule="evenodd" d="M2 0h3v1H2zM1 1h5v1H1zM0 2h7v3H0zM1 5h5v1H1zM2 6h3v1H2zM3 1h1v1H3zM1 3h1v1H1zM3 3h1v1H3zM5 3h1v1H5zM3 5h1v1H3z"/></svg>' : ''}
           <button type="button" class="score${val === '' ? ' empty' : ''}${open ? ' open' : ''}" data-r="${r}" data-c="${c}" data-side="${side}" aria-label="Score for ${esc(team.join(' and '))}: ${val === '' ? 'not set' : val}" ${locked ? 'disabled' : ''}>${val === '' ? '–' : esc(val)}</button>
         </div>${open ? numbers(val) : ''}`;
     };
@@ -473,7 +480,7 @@ $('resetBtn').onclick = () => {
   askConfirm($('resetBtn'), $('resetConfirm'), 'Clear Scores', () => {
       sim = null;
       settleGen++; settled.clear(); pending.clear();
-      t.reset(); t.settings.courts = null; drafts = {}; save(); render(); // keeps the players
+      t.reset(); t.settings.courts = null; drafts = {}; serves = {}; save(); render(); // keeps the players
       go('players');
     });
 };
@@ -504,7 +511,7 @@ document.addEventListener('pointerdown', (e) => {
 // The page works straight away (cards show initials); portraits swap in once the 3D models load.
 async function loadCharacters() {
   try {
-    const mod = await import('./characters.js?v=202610251620');
+    const mod = await import('./characters.js?v=202610261949');
     mod.podiumImage().then((url) => {
       const logo = document.querySelector('.logo');
       logo.querySelector('img').src = url;

@@ -176,19 +176,54 @@
   #page-scores .panel:last-child { margin-bottom: 0; }
   #play { min-width: 0; }
   /* one block per match: status + round number on the left, the two teams in the middle, a score box on the right */
-  .match { display: grid; grid-template-columns: 64px minmax(0, 1fr); margin-bottom: 12px; }
+  .match { display: grid; grid-template-columns: 52px minmax(0, 1fr); margin-bottom: 12px; }
   /* the round number; only the round in play gets the solid yellow block */
   .match .side { display: grid; place-items: center; background: #2a2b30; color: var(--muted); font-family: var(--pixel); font-weight: 400; }
-  .match .no { font-size: 1.9rem; line-height: 1; }
+  .match .no { position: relative; z-index: 1; font-size: 1.15rem; line-height: 1; }
+  /* a pickleball court drawn faintly behind the number, seen from the side: sidelines and baselines, the kitchen lines
+     either side of the (unmarked) net and the centre lines at each end. It takes the block's own text colour. */
+  .match .side { position: relative; }
+  .match .side::before {
+    content: ''; position: absolute; inset: 2px; background: currentColor; opacity: .12; pointer-events: none;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 44' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23000' stroke-width='1' vector-effect='non-scaling-stroke'%3E%3Crect x='.5' y='.5' width='19' height='43' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M0 15H20M0 29H20M10 .5V15M10 29V43.5' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 44' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23000' stroke-width='1' vector-effect='non-scaling-stroke'%3E%3Crect x='.5' y='.5' width='19' height='43' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M0 15H20M0 29H20M10 .5V15M10 29V43.5' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  }
   .match.live .side { background: var(--yellow); color: #111; }
+  /* the game in play has a small ball rallying slowly round the court in straight lines. It turns at the lines, and
+     sometimes before them; just before each turn it blinks. Same yellow, darker, so it sits in the block quietly. */
+  .match.live .side::after {
+    content: ''; position: absolute; z-index: 0; width: 4px; height: 4px; background: #a8a232; pointer-events: none;
+    animation: rally 9s linear infinite;
+  }
+  /* The ball rallies end to end across most of the court's width, but never touches the sidelines. It turns at the top or
+     bottom line, or earlier in mid-court (never right at the middle), and blinks just before each turn. */
+  @keyframes rally {
+    0% { left: calc(20% - 2px); top: 2px; opacity: 1; }
+    13% { opacity: 1; } 13.1% { opacity: .2; } 14.2% { opacity: 1; } 15.4% { opacity: .2; } 16.6% { opacity: 1; }
+    17.8% { left: calc(80% - 2px); top: 72%; opacity: 1; }
+    25.7% { opacity: 1; } 25.8% { opacity: .2; } 26.9% { opacity: 1; } 28.1% { opacity: .2; } 29.3% { opacity: 1; }
+    30.5% { left: calc(22% - 2px); top: 22%; opacity: 1; }
+    44.2% { opacity: 1; } 44.3% { opacity: .2; } 45.4% { opacity: 1; } 46.6% { opacity: .2; } 47.8% { opacity: 1; }
+    49% { left: calc(78% - 2px); top: calc(100% - 6px); opacity: 1; }
+    61.1% { opacity: 1; } 61.2% { opacity: .2; } 62.3% { opacity: 1; } 63.5% { opacity: .2; } 64.7% { opacity: 1; }
+    65.9% { left: calc(18% - 2px); top: 28%; opacity: 1; }
+    74.8% { opacity: 1; } 74.9% { opacity: .2; } 76% { opacity: 1; } 77.2% { opacity: .2; } 78.4% { opacity: 1; }
+    79.6% { left: calc(82% - 2px); top: 82%; opacity: 1; }
+    95.2% { opacity: 1; } 95.3% { opacity: .2; } 96.4% { opacity: 1; } 97.6% { opacity: .2; } 98.8% { opacity: 1; }
+    100% { left: calc(20% - 2px); top: 2px; opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .match.live .side::after { animation: none; left: calc(20% - 2px); top: 2px; } }
   .match .teams { display: grid; } /* the rows overlap by their 1px border, so there is a single line between the two teams */
   .match .teams > * + * { margin-top: -1px; }
   .team { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 7px 8px 7px 14px; background: var(--surface-2); border: 1px solid var(--line); color: var(--text); }
   .team .names { flex: 0 1 auto; min-width: 0; font-size: 1.02rem; overflow-wrap: anywhere; }
   /* mirrored so it leans the other way, tipped a little more, lifted a few pixels and kept clear of the names */
-  .team.win .names { color: var(--yellow); }
+  .match.live .team.win .names { color: var(--yellow); } /* finished games sit back in plain grey; only the crown marks their winner */
   .team .crown { flex: none; width: 28px; height: 28px; margin-left: 2px; object-fit: contain; transform: translateY(-4px) scaleX(-1) rotate(-8deg); }
   .team .score { margin-left: auto; }
+  /* who serves first: a small pixel-art pickleball (7 x 7 pixels, with the holes) in grey, just left of that team's score box */
+  .team .serve { flex: none; display: block; width: 14px; height: 14px; color: var(--muted); margin-left: auto; margin-right: -2px; }
+  .team .serve + .score { margin-left: 0; }
   .team .score { flex: none; width: 52px; height: 40px; padding: 0; background: #2a2b30; color: var(--text); border: 0; font-family: var(--mono); font-size: 1.1rem; cursor: pointer; }
   .team .score.empty { color: var(--muted); }
   .team .score:hover:not(:disabled) { filter: brightness(1.2); }
@@ -199,7 +234,7 @@
   .num { flex: none; width: 40px; height: 40px; padding: 0; background: transparent; border: 1px solid var(--line-2); color: var(--text); font-family: var(--mono); font-size: 1.05rem; cursor: pointer; }
   .num:hover { border-color: var(--muted); }
   .num.on { background: #fff; border-color: #fff; color: #111; }
-  .match.later { opacity: .6; }
+  .match:not(.live) { opacity: .6; } /* only the game in play is at full strength; finished and upcoming ones sit back */
   .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; }
   th, td { white-space: nowrap; border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; }
@@ -375,7 +410,7 @@
 
 <!-- the ?v= number ties these files to this page: GitHub Pages lets browsers keep each file for 10 minutes, so without it an old
      script can end up running against a new page (or the other way round). Run `node tools/stamp.js` before each push. -->
-<script src="americano.js?v=202610251620"></script>
-<script type="module" src="app.js?v=202610251620"></script>
+<script src="americano.js?v=202610261949"></script>
+<script type="module" src="app.js?v=202610261949"></script>
 </body>
 </html>
