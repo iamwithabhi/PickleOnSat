@@ -1,5 +1,5 @@
 // Page logic: routing, players page, matches + scores (basic).
-import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610261949';
+import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610262007';
 
 const STORE = 'americano-v1';
 const UI_STORE = 'americano-ui-v1';
@@ -316,7 +316,7 @@ function renderPlay() {
       const serves1st = state === 'live' && !m.over && serves[`${r}-${c}`] === side; // a small pixel ball marks who serves first in the game being played
       return `<div class="team${win ? ' win' : ''}">
           <span class="names">${esc(team.join(' / '))}</span>${win && crown ? `<img class="crown" src="${crown}" alt="Winner" title="Winner">` : ''}
-          ${serves1st ? '<svg class="serve" viewBox="0 0 7 7" role="img" aria-label="Serves first" shape-rendering="crispEdges"><title>Serves first</title><path fill="currentColor" fill-rule="evenodd" d="M2 0h3v1H2zM1 1h5v1H1zM0 2h7v3H0zM1 5h5v1H1zM2 6h3v1H2zM3 1h1v1H3zM1 3h1v1H1zM3 3h1v1H3zM5 3h1v1H5zM3 5h1v1H3z"/></svg>' : ''}
+          ${serves1st ? '<svg class="serve" viewBox="0 0 14 14" role="img" aria-label="Serves first" shape-rendering="crispEdges"><title>Serves first</title><path fill="currentColor" fill-rule="evenodd" d="M5 0h4v1H5zM3 1h8v1H3zM2 2h10v1H2zM1 3h12v1H1zM0 4h14v6H0zM1 10h12v1H1zM2 11h10v1H2zM3 12h8v1H3zM5 13h4v1H5zM6 5h2v2H6zM3 2h2v2H3zM8 2h2v2H8zM2 7h2v2H2zM10 6h2v2h-2zM6 9h2v2H6zM6 1h2v1H6zM12 4h1v2h-1zM13 7h1v2h-1zM1 5h1v2H1zM3 11h2v1H3zM9 10h2v2H9zM6 13h2v1H6z"/></svg>' : ''}
           <button type="button" class="score${val === '' ? ' empty' : ''}${open ? ' open' : ''}" data-r="${r}" data-c="${c}" data-side="${side}" aria-label="Score for ${esc(team.join(' and '))}: ${val === '' ? 'not set' : val}" ${locked ? 'disabled' : ''}>${val === '' ? '–' : esc(val)}</button>
         </div>${open ? numbers(val) : ''}`;
     };
@@ -511,7 +511,7 @@ document.addEventListener('pointerdown', (e) => {
 // The page works straight away (cards show initials); portraits swap in once the 3D models load.
 async function loadCharacters() {
   try {
-    const mod = await import('./characters.js?v=202610261949');
+    const mod = await import('./characters.js?v=202610262007');
     mod.podiumImage().then((url) => {
       const logo = document.querySelector('.logo');
       logo.querySelector('img').src = url;
