@@ -1,5 +1,5 @@
 // Page logic: routing, players page, matches + scores (basic).
-import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610262007';
+import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610291705';
 
 const STORE = 'americano-v1';
 const UI_STORE = 'americano-ui-v1';
@@ -511,12 +511,7 @@ document.addEventListener('pointerdown', (e) => {
 // The page works straight away (cards show initials); portraits swap in once the 3D models load.
 async function loadCharacters() {
   try {
-    const mod = await import('./characters.js?v=202610262007');
-    mod.podiumImage().then((url) => {
-      const logo = document.querySelector('.logo');
-      logo.querySelector('img').src = url;
-      logo.classList.add('has-img');
-    }).catch((e) => console.warn('Podium logo unavailable.', e));
+    const mod = await import('./characters.js?v=202610291705');
     mod.crownImage().then((url) => { crown = url; renderPlay(); }).catch((e) => console.warn('Crown unavailable.', e));
     await mod.preload();
     gfx = mod;
