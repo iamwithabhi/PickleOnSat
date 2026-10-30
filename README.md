@@ -71,4 +71,4 @@ Minimal, flat, dark UI with sharp corners. Fonts are Geist, Geist Mono and Geist
 
 ## Credits
 
-The 3D characters, podium, crown and stadium in `Characters/` and `Assets/` are third-party models. Check their licences before reusing or redistributing them.
+The 3D characters, podium, crown and stadium in `Characters/` and `Assets/` come from [The Models Resource](https://models.spriters-resource.com/). They are third-party models, so check their terms before reusing or redistributing them.
