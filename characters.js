@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { CHARACTERS } from './character-list.js?v=202610291705';
+import { CHARACTERS } from './character-list.js?v=202610301154';
 
 export { CHARACTERS };
 
@@ -174,10 +174,11 @@ function applyPose(model, pose) {
 }
 
 const STADIUM_DIR = 'Assets/Super Training Stadium/Super Training Stadium/';
+const STADIUM_BACKDROP = false; // set to true to put the podium on the stadium's pitch (the rest of these only apply then)
 const STADIUM_SCALE = 60; // the pitch is ~9.6 wide, the podium ~200: scaled up so the podium fits on the grass
 const PITCH_Y = 0.14;     // height of the grass above the arena's origin, in its own units
-const CAMERA_TILT = 0.1;
-const PODIUM_FRAMING = 1; // how much wider the picture frames than the podium alone: higher = smaller podium // radians the camera looks down, so the grass shows in front of the podium
+const STADIUM_TILT = 0.1; // radians the camera looks down, so a strip of grass shows in front of the podium
+const STADIUM_GRASS = 30; // room under the podium for that strip of grass
 
 // The Super Training Stadium (sky, stands, pitch), drawn unlit so the pixel textures keep their true colours.
 async function loadStadium() {
@@ -216,12 +217,16 @@ export async function podiumScene(ids, width = 960, height = 720) {
   const podium = (await loader.loadAsync('Assets/Podium/model.gltf')).scene;
   crisp(podium);
   const stage = makeStage(width, height);
-  try {
-    const arena = await loadStadium();
-    arena.scale.setScalar(STADIUM_SCALE);
-    arena.position.set(0, PODIUM_BOTTOM + PITCH_Y * STADIUM_SCALE, 0); // the podium stands on the grass, mid-pitch
-    stage.scene.add(arena);
-  } catch (e) { console.warn('Stadium backdrop unavailable.', e); }
+  let backdrop = false;
+  if (STADIUM_BACKDROP) {
+    try {
+      const arena = await loadStadium();
+      arena.scale.setScalar(STADIUM_SCALE);
+      arena.position.set(0, PODIUM_BOTTOM + PITCH_Y * STADIUM_SCALE, 0); // the podium stands on the grass, mid-pitch
+      stage.scene.add(arena);
+      backdrop = true;
+    } catch (e) { console.warn('Stadium backdrop unavailable.', e); }
+  }
   stage.scene.add(podium);
 
   // order on the steps: 2nd on the left, 1st in the middle, 3rd on the right
@@ -248,10 +253,12 @@ export async function podiumScene(ids, width = 960, height = 720) {
 
   // straight-on, orthographic: the steps sit at exactly known positions across the picture
   // frame it to fit the tallest thing (the crown) with a little air, so the bigger the characters the smaller the podium appears
-  const top = headTop - 6 + new THREE.Box3().setFromObject(crown).getSize(new THREE.Vector3()).y + 14, bottom = PODIUM_BOTTOM - 30; // room for a strip of grass in front of the podium
-  const viewH = (top - bottom) * PODIUM_FRAMING, viewW = viewH * (width / height), midY = bottom + viewH / 2;
-  const cam = new THREE.OrthographicCamera(-viewW / 2, viewW / 2, viewH / 2, -viewH / 2, 250, 4000); // near plane at 250: the stands on the camera's side of the pitch are cut away so they don't hide the podium
-  cam.position.set(0, midY + 400 * Math.sin(CAMERA_TILT), 400 * Math.cos(CAMERA_TILT));
+  const top = headTop - 6 + new THREE.Box3().setFromObject(crown).getSize(new THREE.Vector3()).y + 14, bottom = PODIUM_BOTTOM - (backdrop ? STADIUM_GRASS : 4);
+  const viewH = top - bottom, viewW = viewH * (width / height), midY = (top + bottom) / 2;
+  // with the stadium the near plane sits at 250 so the stands on the camera's side of the pitch are cut away and don't hide the podium
+  const cam = new THREE.OrthographicCamera(-viewW / 2, viewW / 2, viewH / 2, -viewH / 2, backdrop ? 250 : 1, backdrop ? 4000 : 1000);
+  const tilt = backdrop ? STADIUM_TILT : 0;
+  cam.position.set(0, midY + 400 * Math.sin(tilt), 400 * Math.cos(tilt));
   cam.lookAt(0, midY, 0);
   stage.renderer.render(stage.scene, cam);
   const url = stage.renderer.domElement.toDataURL('image/png');

@@ -1,5 +1,5 @@
 // Page logic: routing, players page, matches + scores (basic).
-import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610291705';
+import { CHARACTERS, BACKGROUNDS } from './character-list.js?v=202610301154';
 
 const STORE = 'americano-v1';
 const UI_STORE = 'americano-ui-v1';
@@ -432,7 +432,7 @@ function renderStandings() {
   if (!t.started) { $('podiumBox').classList.add('hidden'); return; }
   const standings = t.standings();
   $('standings').innerHTML = standings.map((s) =>
-    `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes} / ${s.byesTotal}</td></tr>`
+    `<tr><td>${s.rank}</td><td>${esc(s.name)}</td><td>${s.points}</td><td>${s.diff}</td><td>${s.played}</td><td>${s.wins}</td><td>${s.byes}/${s.byesTotal}</td></tr>`
   ).join('');
   renderPodium(standings);
 }
@@ -511,7 +511,7 @@ document.addEventListener('pointerdown', (e) => {
 // The page works straight away (cards show initials); portraits swap in once the 3D models load.
 async function loadCharacters() {
   try {
-    const mod = await import('./characters.js?v=202610291705');
+    const mod = await import('./characters.js?v=202610301154');
     mod.crownImage().then((url) => { crown = url; renderPlay(); }).catch((e) => console.warn('Crown unavailable.', e));
     await mod.preload();
     gfx = mod;
